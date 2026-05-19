@@ -267,12 +267,13 @@ class EventStorage extends BaseStorage<EventItem> {
     return EventItem(
       vehicleId: p[0], location: p[1], time: p[2], type: type,
       violationNote: p.length > 4 && p[4].isNotEmpty ? p[4] : null,
+      feesPaid: p.length > 5 && p[5] == '1',
     );
   }
 
   @override
   String encode(EventItem item) =>
-      '${item.vehicleId}|${item.location}|${item.time}|${item.type.name}|${item.violationNote ?? ""}';
+      '${item.vehicleId}|${item.location}|${item.time}|${item.type.name}|${item.violationNote ?? ""}|${item.feesPaid ? "1" : "0"}';
 
   Future<void> save() => saveAll(globalEvents);
 }

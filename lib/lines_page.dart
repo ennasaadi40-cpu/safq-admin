@@ -105,7 +105,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                       // من → إلى في نفس السطر
                       Row(children: [
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(L.get('from'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+                          Text('من', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
                           const SizedBox(height: 5),
                           TextField(controller: fromCtrl, decoration: dec('من')),
                         ])),
@@ -117,7 +117,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                           ]),
                         ),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(L.get('to'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+                          Text('إلى', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
                           const SizedBox(height: 5),
                           TextField(controller: toCtrl, decoration: dec('إلى')),
                         ])),
@@ -125,7 +125,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                       const SizedBox(height: 12),
 
                       // المسار — يفتح مربع جديد تلقائياً
-                      Text(L.get('route'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+                      Text('المحطات الوسطى', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
                       const SizedBox(height: 6),
                       ...middleCtrls.asMap().entries.map((e) {
                         final idx  = e.key;
@@ -275,7 +275,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text(L.get('cancel'), style: TextStyle(color: ctx.textSecondary)),
+                  child: Text('إلغاء', style: TextStyle(color: ctx.textSecondary)),
                 ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
@@ -438,7 +438,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                   // من → إلى
                   Row(children: [
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(L.get('from'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+                      Text('من', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
                       const SizedBox(height: 5),
                       TextField(controller: fromCtrl, decoration: dec('من')),
                     ])),
@@ -450,7 +450,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                       ]),
                     ),
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(L.get('to'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+                      Text('إلى', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
                       const SizedBox(height: 5),
                       TextField(controller: toCtrl, decoration: dec('إلى')),
                     ])),
@@ -458,7 +458,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                   const SizedBox(height: 12),
 
                   // محطات وسطى
-                  Text(L.get('route'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+                  Text('المحطات الوسطى', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
                   const SizedBox(height: 6),
                   ...middleCtrls.asMap().entries.map((e) {
                     final idx = e.key; final ctrl = e.value;
@@ -527,7 +527,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text(L.get('cancel'), style: TextStyle(color: ctx.textSecondary)),
+                child: Text('إلغاء', style: TextStyle(color: ctx.textSecondary)),
               ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
@@ -584,11 +584,11 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(L.get('cancel'), style: TextStyle(color: context.textSecondary)),
+              child: Text('إلغاء', style: TextStyle(color: context.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(L.get('delete'),
+              child: Text('حذف',
                   style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             ),
           ],
@@ -739,11 +739,11 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: Text(L.get('cancel'), style: TextStyle(color: context.textSecondary)),
+              child: Text('إلغاء', style: TextStyle(color: context.textSecondary)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(L.get('delete'),
+              child: Text('حذف',
                   style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             ),
           ],
@@ -859,7 +859,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text(L.get('lines'),
+                  child: Text('الخطوط',
                       style: TextStyle(color: Colors.white,
                           fontWeight: FontWeight.bold, fontSize: 18)),
                 ),
@@ -893,7 +893,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                             children: [
                               const Icon(Icons.add, color: Colors.white, size: 16),
                               const SizedBox(width: 4),
-                              Text(L.get('add'), style: const TextStyle(color: Colors.white,
+                              Text('إضافة', style: const TextStyle(color: Colors.white,
                                   fontSize: 13, fontWeight: FontWeight.bold)),
                             ],
                           ),
@@ -1307,7 +1307,7 @@ class _LineInfoPageState extends State<_LineInfoPage> with DarkModeRebuild<_Line
                           Container(
                             width: 40, height: 40,
                             decoration: BoxDecoration(color: const Color(0xFF2D3A5C).withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10)),
-                            child: Center(child: Text('\${v.number}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: context.textPrimary))),
+                            child: Center(child: Text('${v.number}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: context.textPrimary))),
                           ),
                           const SizedBox(width: 12),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1318,9 +1318,9 @@ class _LineInfoPageState extends State<_LineInfoPage> with DarkModeRebuild<_Line
                               const SizedBox(width: 4),
                               Text(
                                 !hasExpiry ? 'التحميل: غير محدد'
-                                  : daysLeft < 0 ? 'انتهى منذ \${daysLeft.abs()} يوم'
+                                  : daysLeft < 0 ? 'انتهى منذ ${daysLeft.abs()} يوم'
                                   : daysLeft == 0 ? 'ينتهي اليوم'
-                                  : 'متبقي \$daysLeft يوم',
+                                  : 'متبقي $daysLeft يوم',
                                 style: TextStyle(fontSize: 10, color: loadColor, fontWeight: FontWeight.w600),
                               ),
                             ]),
@@ -1417,7 +1417,7 @@ class _LineExpandedSectionState extends State<_LineExpandedSection>
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 const Icon(Icons.edit_outlined, size: 13, color: Color(0xFF2D3A5C)),
                 const SizedBox(width: 4),
-                Text(L.get('edit'), style: TextStyle(fontSize: 11, color: context.textPrimary, fontWeight: FontWeight.bold)),
+                Text('تعديل', style: TextStyle(fontSize: 11, color: context.textPrimary, fontWeight: FontWeight.bold)),
               ]),
             ),
           ),
@@ -1440,15 +1440,15 @@ class _LineExpandedSectionState extends State<_LineExpandedSection>
 
         // ── معلومات الخط ─────────────────────────
         if (line.supervisor.isNotEmpty)
-          _InfoRow(icon: Icons.manage_accounts_outlined, label: L.get('supervisor'), value: line.supervisor),
+          _InfoRow(icon: Icons.manage_accounts_outlined, label: 'المشرف', value: line.supervisor),
         if (line.fare.isNotEmpty)
-          _InfoRow(icon: Icons.payments_outlined, label: L.get('fare'), value: '${line.fare} شيكل', color: const Color(0xFF00C897)),
+          _InfoRow(icon: Icons.payments_outlined, label: 'الأجرة', value: '${line.fare} شيكل', color: const Color(0xFF00C897)),
         if (line.loadingSlots > 0)
           _InfoRow(icon: Icons.grid_view_rounded, label: 'خانات التحميل', value: '${line.loadingSlots}', color: const Color(0xFF4B9EFF)),
         if (line.entryGateId.isNotEmpty)
-          _InfoRow(icon: Icons.login_outlined, label: L.get('entry_gate'), value: line.entryGateId),
+          _InfoRow(icon: Icons.login_outlined, label: 'بوابة الدخول', value: line.entryGateId),
         if (line.exitGateId.isNotEmpty)
-          _InfoRow(icon: Icons.logout_outlined, label: L.get('exit_gate'), value: line.exitGateId),
+          _InfoRow(icon: Icons.logout_outlined, label: 'بوابة الخروج', value: line.exitGateId),
 
         const SizedBox(height: 12),
         const Divider(height: 1),
@@ -1656,7 +1656,7 @@ class _LineExpandedSectionState extends State<_LineExpandedSection>
                                         lastDate: DateTime(2030),
                                       );
                                       if (picked != null) {
-                                        ctrl.text = '\${picked.year}-\${picked.month.toString().padLeft(2,"0")}-\${picked.day.toString().padLeft(2,"0")}';
+                                        ctrl.text = '${picked.year}-${picked.month.toString().padLeft(2,"0")}-${picked.day.toString().padLeft(2,"0")}';
                                         setDlg(() {});
                                       }
                                     },
@@ -1674,7 +1674,7 @@ class _LineExpandedSectionState extends State<_LineExpandedSection>
                                           } catch (_) { return DateTime.now(); }
                                         }() : DateTime.now();
                                         final nd = base.add(Duration(days: days));
-                                        ctrl.text = '\${nd.year}-\${nd.month.toString().padLeft(2,"0")}-\${nd.day.toString().padLeft(2,"0")}';
+                                        ctrl.text = '${nd.year}-${nd.month.toString().padLeft(2,"0")}-${nd.day.toString().padLeft(2,"0")}';
                                         setDlg(() {});
                                       },
                                       child: Container(
@@ -1684,7 +1684,7 @@ class _LineExpandedSectionState extends State<_LineExpandedSection>
                                           borderRadius: BorderRadius.circular(20),
                                           border: Border.all(color: const Color(0xFF4B9EFF).withValues(alpha: 0.3)),
                                         ),
-                                        child: Text('+\$days يوم', style: const TextStyle(fontSize: 11, color: Color(0xFF4B9EFF), fontWeight: FontWeight.bold)),
+                                        child: Text('+$days يوم', style: const TextStyle(fontSize: 11, color: Color(0xFF4B9EFF), fontWeight: FontWeight.bold)),
                                       ),
                                     );
                                   }).toList()),
@@ -1692,7 +1692,7 @@ class _LineExpandedSectionState extends State<_LineExpandedSection>
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
-                                    child: Text(L.get('cancel'), style: TextStyle(color: ctx.textSecondary)),
+                                    child: Text('إلغاء', style: TextStyle(color: ctx.textSecondary)),
                                   ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2D3A5C), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
@@ -1716,7 +1716,7 @@ class _LineExpandedSectionState extends State<_LineExpandedSection>
                                       Navigator.pop(context);
                                       setState(() {});
                                     },
-                                    child: Text(L.get('save'), style: const TextStyle(color: Colors.white)),
+                                    child: Text('حفظ', style: const TextStyle(color: Colors.white)),
                                   ),
                                 ],
                               ),

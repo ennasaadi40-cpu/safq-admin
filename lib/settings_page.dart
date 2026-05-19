@@ -45,83 +45,80 @@ class _SettingsPageState extends State<SettingsPage> with DarkModeRebuild<Settin
   );
 
   void _showResetDataConfirm(BuildContext context) {
-    final passwordCtrl = TextEditingController();
-    bool passwordVisible = false;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => StatefulBuilder(
-        builder: (ctx, setDlg) => Directionality(
-          textDirection: TextDirection.rtl,
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Row(children: [
-              Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                child: const Icon(Icons.delete_forever_rounded, color: Colors.red, size: 26)),
-              const SizedBox(width: 12),
-              const Expanded(child: Text('⚠️ تحذير خطير', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18))),
-            ]),
-            content: SingleChildScrollView(
-              child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.red.withValues(alpha: 0.2))),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Row(children: [Icon(Icons.warning_amber_rounded, color: Colors.red, size: 20), SizedBox(width: 8), Text('سيتم حذف:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14))]),
-                    const SizedBox(height: 10),
-                    _deleteItem('جميع المركبات والخطوط'),
-                    _deleteItem('جميع المستخدمين'),
-                    _deleteItem('جميع الأحداث والسجلات'),
-                    _deleteItem('جميع البوابات'),
-                    _deleteItem('الإشعارات والتنبيهات'),
-                    _deleteItem('بيانات الحساب الشخصي'),
-                  ]),
-                ),
-                const SizedBox(height: 16),
-                const Text('⚠️ هذا الإجراء لا يمكن التراجع عنه!', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(height: 16),
-                const Text('أدخل كلمة مرور المدير للتأكيد:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: passwordCtrl,
-                  obscureText: !passwordVisible,
-                  textDirection: TextDirection.ltr,
-                  decoration: InputDecoration(
-                    hintText: 'كلمة مرور المدير',
-                    hintStyle: const TextStyle(fontSize: 13),
-                    suffixIcon: IconButton(icon: Icon(passwordVisible ? Icons.visibility_off : Icons.visibility, size: 18), onPressed: () => setDlg(() => passwordVisible = !passwordVisible)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.red, width: 1.5)),
-                  ),
-                ),
-              ]),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء', style: TextStyle(color: Colors.grey))),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                icon: const Icon(Icons.delete_forever, color: Colors.white, size: 18),
-                label: const Text('حذف كل شي', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                onPressed: () async {
-                  if (passwordCtrl.text != adminPassword) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('كلمة المرور خاطئة!', textDirection: TextDirection.rtl), backgroundColor: Colors.red));
-                    return;
-                  }
-                  await _resetAllData();
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Row(children: const [Icon(Icons.check_circle, color: Colors.white, size: 20), SizedBox(width: 10), Text('تم حذف جميع البيانات بنجاح ✓', textDirection: TextDirection.rtl)]),
-                    backgroundColor: const Color(0xFF2E7D32), duration: const Duration(seconds: 3),
-                    behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), margin: const EdgeInsets.all(16),
-                  ));
-                  Future.delayed(const Duration(seconds: 2), () {
-                    if (context.mounted) Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginPage()), (route) => false);
-                  });
-                },
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(children: [
+            Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.delete_forever_rounded, color: Colors.red, size: 26)),
+            const SizedBox(width: 12),
+            const Expanded(child: Text('⚠️ تحذير خطير', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18))),
+          ]),
+          content: SingleChildScrollView(
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.red.withValues(alpha: 0.2))),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Row(children: [Icon(Icons.warning_amber_rounded, color: Colors.red, size: 20), SizedBox(width: 8), Text('سيتم حذف:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14))]),
+                  const SizedBox(height: 10),
+                  _deleteItem('جميع المركبات والخطوط'),
+                  _deleteItem('جميع المستخدمين'),
+                  _deleteItem('جميع الأحداث والسجلات'),
+                  _deleteItem('جميع البوابات'),
+                  _deleteItem('الإشعارات والتنبيهات'),
+                  _deleteItem('بيانات الحساب الشخصي'),
+                ]),
               ),
-            ],
+              const SizedBox(height: 16),
+              const Text('⚠️ هذا الإجراء لا يمكن التراجع عنه!', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13)),
+            ]),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء', style: TextStyle(color: Colors.grey))),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              icon: const Icon(Icons.delete_forever, color: Colors.white, size: 18),
+              label: const Text('حذف كل شي', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              onPressed: () async {
+                final confirm2 = await showDialog<bool>(
+                  context: context,
+                  builder: (_) => Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      title: const Text('هل أنت متأكد؟', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                      content: const Text('لا يمكن التراجع عن هذا الإجراء بعد تنفيذه.'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء', style: TextStyle(color: Colors.grey))),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('نعم، احذف', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+                if (confirm2 != true) return;
+                await _resetAllData();
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Row(children: const [Icon(Icons.check_circle, color: Colors.white, size: 20), SizedBox(width: 10), Text('تم حذف جميع البيانات بنجاح ✓', textDirection: TextDirection.rtl)]),
+                  backgroundColor: const Color(0xFF2E7D32), duration: const Duration(seconds: 3),
+                  behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), margin: const EdgeInsets.all(16),
+                ));
+                Future.delayed(const Duration(seconds: 2), () {
+                  if (context.mounted) Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginPage()), (route) => false);
+                });
+              },
+            ),
+          ],
         ),
       ),
     );

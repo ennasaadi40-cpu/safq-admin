@@ -11,15 +11,14 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
   final _formKey           = GlobalKey<FormState>();
   late final _nameCtrl         = TextEditingController(text: widget.user.name);
   late final _usernameCtrl     = TextEditingController(text: widget.user.username);
-  late final _passwordCtrl     = TextEditingController(text: widget.user.password);
   late final _phoneCtrl        = TextEditingController(text: widget.user.phone);
   late final _idCtrl           = TextEditingController(text: widget.user.idNumber);
   late final _licenseNumCtrl   = TextEditingController(text: widget.user.licenseNum);
   late final _licenseExpiryCtrl = TextEditingController(text: widget.user.licenseExpiry);
   late String? _selectedRole   = widget.user.role;
+  late String _currentPassword  = widget.user.password; // يتحدث عند تغيير كلمة المرور
   late String? _selectedStatus = widget.user.status;
   late bool _isActive          = widget.user.isActive;
-  bool _obscurePassword = true;
   // FocusNodes
   final _feName = FocusNode(); final _feUsername = FocusNode();
   final _fePassword = FocusNode(); final _fePhone = FocusNode();
@@ -30,7 +29,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _usernameCtrl.dispose(); _passwordCtrl.dispose();
+    _nameCtrl.dispose(); _usernameCtrl.dispose();
     _phoneCtrl.dispose(); _idCtrl.dispose();
     _feName.dispose(); _feUsername.dispose(); _fePassword.dispose();
     _fePhone.dispose(); _feId.dispose(); _feLicNum.dispose();
@@ -77,9 +76,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
         licenseNum:    _licenseNumCtrl.text.trim(),
         licenseExpiry: _licenseExpiryCtrl.text.trim(),
         isActive:      _isActive,
-        password:      _passwordCtrl.text.isNotEmpty
-                           ? _passwordCtrl.text
-                           : widget.user.password,
+        password:      _currentPassword,
       );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Row(children: [
@@ -105,6 +102,87 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
     }
   }
 
+  void _changePassword(BuildContext context) {
+    final newPassCtrl  = TextEditingController();
+    final confPassCtrl = TextEditingController();
+    bool showNew = false, showConf = false;
+    String? error;
+
+    showDialog(context: context, builder: (_) => StatefulBuilder(builder: (ctx, setDlg) => Directionality(
+      textDirection: TextDirection.rtl,
+      child: AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(children: [
+          Container(padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: const Color(0xFF2D3A5C).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.lock_outline, color: Color(0xFF2D3A5C), size: 20)),
+          const SizedBox(width: 10),
+          Expanded(child: Text('تغيير كلمة مرور ${widget.user.name}',
+              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold, fontSize: 15))),
+        ]),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('كلمة المرور الجديدة', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+          const SizedBox(height: 6),
+          TextField(controller: newPassCtrl, obscureText: !showNew, textDirection: TextDirection.ltr,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
+              suffixIcon: IconButton(icon: Icon(showNew ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+                onPressed: () => setDlg(() => showNew = !showNew)),
+            )),
+          const SizedBox(height: 12),
+          Text('تأكيد كلمة المرور', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+          const SizedBox(height: 6),
+          TextField(controller: confPassCtrl, obscureText: !showConf, textDirection: TextDirection.ltr,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
+              suffixIcon: IconButton(icon: Icon(showConf ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+                onPressed: () => setDlg(() => showConf = !showConf)),
+            )),
+          if (error != null) ...[
+            const SizedBox(height: 8),
+            Text(error!, style: const TextStyle(color: Color(0xFFFF5A5F), fontSize: 12)),
+          ],
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context),
+              child: Text('إلغاء', style: TextStyle(color: ctx.textSecondary))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2D3A5C),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: () {
+              if (newPassCtrl.text.isEmpty) { setDlg(() => error = 'أدخل كلمة المرور'); return; }
+              if (newPassCtrl.text != confPassCtrl.text) { setDlg(() => error = 'كلمتا المرور غير متطابقتين'); return; }
+              final idx = globalUsers.indexWhere((u) => u.name == widget.user.name);
+              if (idx != -1) {
+                globalUsers[idx] = UserModel(
+                  name: globalUsers[idx].name, role: globalUsers[idx].role,
+                  status: globalUsers[idx].status, phone: globalUsers[idx].phone,
+                  idNumber: globalUsers[idx].idNumber, licenseNum: globalUsers[idx].licenseNum,
+                  licenseExpiry: globalUsers[idx].licenseExpiry, isActive: globalUsers[idx].isActive,
+                  licenseIssueDate: globalUsers[idx].licenseIssueDate,
+                  licenseGrade: globalUsers[idx].licenseGrade,
+                  username: globalUsers[idx].username, macAddress: globalUsers[idx].macAddress,
+                  password: newPassCtrl.text,
+                );
+                autoSave();
+                setState(() => _currentPassword = newPassCtrl.text);
+              }
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: const Text('تم تغيير كلمة المرور ✓', textDirection: TextDirection.rtl),
+                backgroundColor: const Color(0xFF2E7D32), behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), margin: const EdgeInsets.all(16),
+              ));
+            },
+            child: const Text('حفظ', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    )));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -118,7 +196,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text(L.get('edit_user'),
+          title: Text('تعديل المستخدم',
               style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
         ),
         body: Form(
@@ -129,7 +207,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // الاسم الكامل
-                _label(L.get('full_name')),
+                _label('الاسم الكامل'),
                 TextFormField(
          onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _nameCtrl,
@@ -164,21 +242,6 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                 ),
                 const SizedBox(height: 16),
 
-                // Password
-                _label('كلمة المرور'),
-                TextFormField(
-                          controller: _passwordCtrl,
-                  obscureText: _obscurePassword,
-                  textDirection: TextDirection.ltr,
-                  decoration: _inputDec('كلمة السر الحالية: ${widget.user.password.isNotEmpty ? "●" * widget.user.password.length : "غير محددة"}').copyWith(
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.grey, size: 20),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
 
                 // Role
                 _label('الدور'),
@@ -192,7 +255,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                 const SizedBox(height: 16),
 
                 // رقم الهاتف
-                _label(L.get('phone')),
+                _label('رقم الهاتف'),
                 TextFormField(
                           controller: _phoneCtrl,
                   textDirection: TextDirection.ltr,
@@ -209,7 +272,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                 const SizedBox(height: 16),
 
                 // رقم الهوية
-                _label(L.get('id_number')),
+                _label('رقم الهوية'),
                 TextFormField(
                           controller: _idCtrl,
                   textDirection: TextDirection.ltr,
