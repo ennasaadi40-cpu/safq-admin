@@ -1,0 +1,336 @@
+part of station_app;
+
+class _ProfilePage extends StatefulWidget {
+  const _ProfilePage();
+  @override
+  State<_ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_ProfilePage> {
+
+  // ── فتح dialog لتعديل حقل معين ──────────────
+  void _editField(String label, String current, void Function(String) onSave) {
+    final ctrl = TextEditingController(text: current);
+    showDialog(
+      context: context,
+      builder: (_) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('تعديل $label',
+              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold)),
+          content: TextField(
+             controller: ctrl,
+            autofocus: true,
+            textDirection: label == 'الهاتف' || label == 'الإيميل'
+                ? TextDirection.ltr : TextDirection.rtl,
+            keyboardType: label == 'الهاتف' ? TextInputType.phone
+                : label == 'الإيميل' ? TextInputType.emailAddress
+                : TextInputType.text,
+            decoration: InputDecoration(
+              hintText: 'ادخل $label',
+              enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: context.dividerColor)),
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(L.get('cancel'), style: TextStyle(color: context.textSecondary)),
+            ),
+            TextButton(
+              onPressed: () {
+                if (ctrl.text.trim().isNotEmpty) {
+                  setState(() => onSave(ctrl.text.trim()));
+                }
+                Navigator.pop(context);
+              },
+              child: Text(L.get('save'),
+                  style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── اختيار صورة ─────────────────────────────
+  void _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    setState(() => profileImageBytes = bytes);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: context.bgColor,
+        appBar: AppBar(
+          backgroundColor: context.bgColor,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_forward_ios, color: context.textPrimary, size: 18),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(L.get('profile'),
+              style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 30),
+
+              // ── الصورة الشخصية ──────────────
+              Stack(
+                alignment: Alignment.bottomLeft,
+                children: [
+                  CircleAvatar(
+                    radius: 52,
+                    backgroundColor: const Color(0xFF2D3A5C).withValues(alpha: 0.12),
+                    backgroundImage: profileImageBytes != null
+                        ? MemoryImage(Uint8List.fromList(profileImageBytes!))
+                        : null,
+                    child: profileImageBytes == null
+                        ? Icon(Icons.person, size: 64, color: const Color(0xFF2D3A5C))
+                        : null,
+                  ),
+                  // زر تغيير الصورة
+                  _Tap(
+                    onTap: _pickImage,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D3A5C),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(Icons.camera_alt, color: Colors.white, size: 15),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+
+              Text(profileName,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,
+                      color: context.textPrimary)),
+              const SizedBox(height: 4),
+              Text(profileEmail,
+                  style: TextStyle(fontSize: 13, color: context.textSecondary)),
+              const SizedBox(height: 30),
+
+              // ── الحقول القابلة للتعديل ──────
+              _EditableProfileRow(
+                icon: Icons.person_outline,
+                label: 'الاسم',
+                value: profileName,
+                onTap: () => _editField('الاسم', profileName,
+                    (v) => profileName = v),
+              ),
+              _EditableProfileRow(
+                icon: Icons.email_outlined,
+                label: 'Email',
+                value: profileEmail,
+                onTap: () => _editField('الإيميل', profileEmail,
+                    (v) => profileEmail = v),
+              ),
+              _EditableProfileRow(
+                icon: Icons.phone_outlined,
+                label: 'Phone',
+                value: profilePhone,
+                onTap: () => _editField('الهاتف', profilePhone,
+                    (v) => profilePhone = v),
+              ),
+              _EditableProfileRow(
+                icon: Icons.badge_outlined,
+                label: L.get('role'),
+                value: 'أدمن',
+                onTap: null, // غير قابل للتعديل
+              ),
+
+              const SizedBox(height: 30),
+
+              // ── زر تسجيل الخروج ─────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
+                child: Material(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                            title: Row(children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(L.get('logout'),
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            ]),
+                            content: const Text(
+                              'هل أنت متأكد أنك تريد تسجيل الخروج؟\nسيتم حفظ جميع البيانات.',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(L.get('cancel'),
+                                    style: TextStyle(color: Colors.grey[600])),
+                              ),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                icon: const Icon(Icons.logout_rounded,
+                                    color: Colors.white, size: 18),
+                                label: Text('Exit',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)),
+                                onPressed: () => Navigator.pop(context, true),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                      if (confirm != true) return;
+                      await saveAllData();
+                      if (!context.mounted) return;
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.logout, color: Colors.red, size: 20),
+                          const SizedBox(width: 8),
+                          Text(L.get('logout'),
+                              style: TextStyle(color: Colors.red,
+                                  fontWeight: FontWeight.bold, fontSize: 15)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── صف معلومة قابل للتعديل ───────────────────
+class _EditableProfileRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback? onTap;
+  const _EditableProfileRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _Tap(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        color: context.cardColor,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: context.textSecondary, size: 22),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label,
+                          style: TextStyle(fontSize: 11, color: context.textSecondary)),
+                      const SizedBox(height: 2),
+                      Text(value,
+                          style: TextStyle(fontSize: 15, color: context.textPrimary)),
+                    ],
+                  ),
+                ),
+                if (onTap != null)
+                  Icon(Icons.edit_outlined, size: 16, color: context.textSecondary),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Divider(height: 1, color: context.dividerColor),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── (legacy - kept for compatibility) ────────
+class _ProfileInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final VoidCallback onTap;
+  const _ProfileInfoRow({required this.icon, required this.value, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: context.cardColor,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: context.dividerColor)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(value,
+                    style: TextStyle(fontSize: 15, color: context.textPrimary)),
+              ),
+              Icon(icon, color: context.textSecondary, size: 22),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

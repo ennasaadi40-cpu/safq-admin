@@ -1,0 +1,58 @@
+part of station_app;
+
+final ValueNotifier<String> langNotifier = ValueNotifier('ar');
+
+class L {
+  static String get(String key) => _ar[key] ?? key;
+
+  static const Map<String, String> _ar = {
+    'dashboard':      'الرئيسية',
+    'gates':          'البوابة',
+    'lines':          'الخطوط',
+    'users':          'المستخدمين',
+    'vehicles':       'المركبات',
+    'شكاوى':     'الشكاوى',
+    'reports':        'التقارير',
+    'settings':       'الإعدادات',
+    'add':            'إضافة',
+    'edit':           'تعديل',
+    'delete':         'حذف',
+    'save':           'حفظ',
+    'cancel':         'إلغاء',
+    'search':         'بحث',
+    'profile':        'الملف الشخصي',
+    'logout':         'تسجيل الخروج',
+    'notifications':  'الإشعارات',
+    'dark_mode':      'الوضع الداكن',
+    'language':       'اللغة',
+    'add_user':       'إضافة مستخدم',
+    'full_name':      'الاسم الكامل',
+    'id_number':      'رقم الهوية',
+    'supervisor':     'المشرف',
+    'fare':           'الأجرة',
+    'entry_gate':     'بوابة الدخول',
+    'exit_gate':      'بوابة الخروج',
+    'from':           'من',
+    'to':             'إلى',
+    'route':          'المسار',
+    'add_vehicle':    'إضافة مركبة',
+    'plate_number':   'رقم اللوحة',
+    'manufacturer':   'الشركة المصنعة',
+    'model':          'الطراز',
+    'year':           'سنة الإنتاج',
+    'chassis':        'رقم الشصي',
+    'op_lic_num':     'رقم رخصة التشغيل',
+    'op_lic_exp':     'انتهاء رخصة التشغيل',
+    'lic_exp':        'انتهاء الترخيص',
+    'insurance_exp':  'انتهاء التأمين',
+    'loading_exp':    'انتهاء التحميل',
+    'owner_name':     'اسم المالك',
+    'owner_phone':    'هاتف المالك',
+    'owner_id':       'هوية المالك',
+    'driver':         'السائق',
+    'line':           'الخط',
+    'status_banned':  'محظورة',
+    'status_waiting': 'في الانتظار',
+    'status_ready':   'جاهزة',
+  };
+}
