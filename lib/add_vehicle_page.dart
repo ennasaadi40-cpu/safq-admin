@@ -351,7 +351,7 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                       decoration: _dec('xxxxxxxxx', icon: Icons.badge_outlined),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
-                        if (!RegExp(r'^\d+\$').hasMatch(v.trim())) return 'أرقام فقط';
+                        if (!RegExp(r'^\d+$').hasMatch(v.trim())) return 'أرقام فقط';
                         if (v.trim().length != 9) return '9 أرقام بالضبط';
                         return null;
                       },
@@ -481,6 +481,15 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                       operatingLicDate: _opLicExpCtrl.text.trim(),
                       rfidTag:          _rfidCtrl.text.trim(),
                       loadingExpiry:    _loadingExpiryCtrl.text.trim(),
+                      
+                      // ✅ الحقول المضافة
+                      maker:            _makerCtrl.text.trim(),
+                      model:            _modelCtrl.text.trim(),
+                      year:             _yearCtrl.text.trim(),
+                      chassis:          _chassisCtrl.text.trim(),
+                      ownerPhone:       _ownerPhoneCtrl.text.trim(),
+                      ownerId:          _ownerIdCtrl.text.trim(),
+                      driverName:       _selectedDriver ?? '',
                     );
 
                     final lineIndex = _selectedLine != null
@@ -500,6 +509,13 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                         operatingLicDate: newVehicle.operatingLicDate,
                         rfidTag: newVehicle.rfidTag,
                         loadingExpiry: newVehicle.loadingExpiry,
+                        maker: newVehicle.maker,
+                        model: newVehicle.model,
+                        year: newVehicle.year,
+                        chassis: newVehicle.chassis,
+                        ownerPhone: newVehicle.ownerPhone,
+                        ownerId: newVehicle.ownerId,
+                        driverName: newVehicle.driverName,
                       );
                       globalVehicles[lineIndex].add(updated);
                     } else {
@@ -520,6 +536,13 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                           operatingLicDate: newVehicle.operatingLicDate,
                           rfidTag: newVehicle.rfidTag,
                           loadingExpiry: newVehicle.loadingExpiry,
+                          maker: newVehicle.maker,
+                          model: newVehicle.model,
+                          year: newVehicle.year,
+                          chassis: newVehicle.chassis,
+                          ownerPhone: newVehicle.ownerPhone,
+                          ownerId: newVehicle.ownerId,
+                          driverName: newVehicle.driverName,
                         ));
                       }
                     }

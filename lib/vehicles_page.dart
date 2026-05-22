@@ -19,7 +19,8 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
         final v = globalVehicles[li][vi];
         if (_searchQuery.isEmpty ||
             v.vehicleId.contains(_searchQuery) ||
-            v.ownerName.contains(_searchQuery)) {
+            v.ownerName.contains(_searchQuery) ||
+            v.driverName.contains(_searchQuery)) {
           result.add(_VehicleEntry(lineIdx: li, vehIdx: vi, lv: v, lineName: globalLines[li].name));
         }
       }
@@ -127,7 +128,26 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                     if (selectedLine != null && globalLines[li].name != selectedLine) continue;
                     for (int vi = 0; vi < globalVehicles[li].length; vi++) {
                       final old = globalVehicles[li][vi];
-                      globalVehicles[li][vi] = LineVehicle(number: old.number, vehicleId: old.vehicleId, status: old.status, note: old.note, ownerName: old.ownerName, carLicExpiry: old.carLicExpiry, insuranceExpiry: old.insuranceExpiry, operatingLicNum: old.operatingLicNum, operatingLicDate: old.operatingLicDate, rfidTag: old.rfidTag, loadingExpiry: newStr);
+                      globalVehicles[li][vi] = LineVehicle(
+                        number: old.number, 
+                        vehicleId: old.vehicleId, 
+                        status: old.status, 
+                        note: old.note, 
+                        ownerName: old.ownerName, 
+                        carLicExpiry: old.carLicExpiry, 
+                        insuranceExpiry: old.insuranceExpiry, 
+                        operatingLicNum: old.operatingLicNum, 
+                        operatingLicDate: old.operatingLicDate, 
+                        rfidTag: old.rfidTag, 
+                        loadingExpiry: newStr,
+                        maker: old.maker,
+                        model: old.model,
+                        year: old.year,
+                        chassis: old.chassis,
+                        ownerPhone: old.ownerPhone,
+                        ownerId: old.ownerId,
+                        driverName: old.driverName,
+                      );
                       updated++;
                     }
                   }
@@ -206,7 +226,7 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                     textDirection: TextDirection.rtl,
                     onChanged: (v) => setState(() { _searchQuery = v; _expandedVehicleIdx = null; }),
                     decoration: InputDecoration(
-                      hintText: 'ابحث عن رقم اللوحة أو المالك...',
+                      hintText: 'ابحث عن رقم اللوحة أو السائق...',
                       hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
                       prefixIcon: Icon(Icons.search, color: context.textSecondary),
                       border: InputBorder.none,
@@ -288,7 +308,7 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                     Text(lv.vehicleId, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.textPrimary)),
                                     const SizedBox(height: 2),
-                                    Text(lv.ownerName.isNotEmpty ? lv.ownerName : 'غير محدد', style: TextStyle(fontSize: 12, color: context.textSecondary)),
+                                    Text(lv.driverName.isNotEmpty ? lv.driverName : 'بدون سائق', style: TextStyle(fontSize: 12, color: context.textSecondary)),
                                     const SizedBox(height: 4),
                                     // تاريخ التحميل
                                     Row(children: [
@@ -385,7 +405,26 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                                                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2D3A5C), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                                                     onPressed: () {
                                                       final old = globalVehicles[e.lineIdx][e.vehIdx];
-                                                      globalVehicles[e.lineIdx][e.vehIdx] = LineVehicle(number: old.number, vehicleId: old.vehicleId, status: old.status, note: old.note, ownerName: old.ownerName, carLicExpiry: old.carLicExpiry, insuranceExpiry: old.insuranceExpiry, operatingLicNum: old.operatingLicNum, operatingLicDate: old.operatingLicDate, rfidTag: old.rfidTag, loadingExpiry: ctrl.text.trim());
+                                                      globalVehicles[e.lineIdx][e.vehIdx] = LineVehicle(
+                                                        number: old.number, 
+                                                        vehicleId: old.vehicleId, 
+                                                        status: old.status, 
+                                                        note: old.note, 
+                                                        ownerName: old.ownerName, 
+                                                        carLicExpiry: old.carLicExpiry, 
+                                                        insuranceExpiry: old.insuranceExpiry, 
+                                                        operatingLicNum: old.operatingLicNum, 
+                                                        operatingLicDate: old.operatingLicDate, 
+                                                        rfidTag: old.rfidTag, 
+                                                        loadingExpiry: ctrl.text.trim(),
+                                                        maker: old.maker,
+                                                        model: old.model,
+                                                        year: old.year,
+                                                        chassis: old.chassis,
+                                                        ownerPhone: old.ownerPhone,
+                                                        ownerId: old.ownerId,
+                                                        driverName: old.driverName,
+                                                      );
                                                       autoSave();
                                                       setState(() {});
                                                       Navigator.pop(context);
@@ -501,7 +540,26 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                                                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2D3A5C), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                                                     onPressed: () {
                                                       final old = globalVehicles[e.lineIdx][e.vehIdx];
-                                                      final updatedV = LineVehicle(number: old.number, vehicleId: old.vehicleId, status: old.status, note: old.note, ownerName: old.ownerName, carLicExpiry: carLicCtrl.text.trim(), insuranceExpiry: insCtrl.text.trim(), operatingLicNum: old.operatingLicNum, operatingLicDate: opLicCtrl.text.trim(), rfidTag: old.rfidTag, loadingExpiry: loadCtrl.text.trim());
+                                                      final updatedV = LineVehicle(
+                                                        number: old.number, 
+                                                        vehicleId: old.vehicleId, 
+                                                        status: old.status, 
+                                                        note: old.note, 
+                                                        ownerName: old.ownerName, 
+                                                        carLicExpiry: carLicCtrl.text.trim(), 
+                                                        insuranceExpiry: insCtrl.text.trim(), 
+                                                        operatingLicNum: old.operatingLicNum, 
+                                                        operatingLicDate: opLicCtrl.text.trim(), 
+                                                        rfidTag: old.rfidTag, 
+                                                        loadingExpiry: loadCtrl.text.trim(),
+                                                        maker: old.maker,
+                                                        model: old.model,
+                                                        year: old.year,
+                                                        chassis: old.chassis,
+                                                        ownerPhone: old.ownerPhone,
+                                                        ownerId: old.ownerId,
+                                                        driverName: old.driverName,
+                                                      );
                                                       // تحديث مسار الخط
                                                       final targetIdx = selLine != null ? globalLines.indexWhere((l) => l.name == selLine) : e.lineIdx;
                                                       final useIdx = targetIdx != -1 ? targetIdx : e.lineIdx;

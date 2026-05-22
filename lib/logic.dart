@@ -190,6 +190,7 @@ class LineModel {
   });
 }
 
+// ✅ LineVehicle المحدّث مع جميع الحقول
 class LineVehicle extends BaseModel {
   final int     number;
   final String  vehicleId;
@@ -201,19 +202,35 @@ class LineVehicle extends BaseModel {
   final String  operatingLicDate;
   final String  rfidTag;
   final String  loadingExpiry;
+  
+  // ✅ الحقول الجديدة
+  final String  maker;           // الشركة المصنعة
+  final String  model;           // الطراز
+  final String  year;            // سنة الإنتاج
+  final String  chassis;         // رقم الشاصي
+  final String  ownerPhone;      // هاتف المالك
+  final String  ownerId;         // هوية المالك
+  final String  driverName;      // اسم السائق
 
   LineVehicle({
     required this.number,
     required this.vehicleId,
     required String status,
     this.note,
-    this.ownerName       = '',
-    this.carLicExpiry    = '',
-    this.insuranceExpiry = '',
+    this.ownerName        = '',
+    this.carLicExpiry     = '',
+    this.insuranceExpiry  = '',
     this.operatingLicNum  = '',
     this.operatingLicDate = '',
     this.rfidTag          = '',
     this.loadingExpiry    = '',
+    this.maker            = '',
+    this.model            = '',
+    this.year             = '',
+    this.chassis          = '',
+    this.ownerPhone       = '',
+    this.ownerId          = '',
+    this.driverName       = '',
   }) : super(id: vehicleId, status: status);
 
   @override
@@ -358,21 +375,36 @@ class LineStorage {
         );
       }).toList();
 
+  // ✅ _parseVehicles المحدّث لقراءة جميع الحقول
   List<List<LineVehicle>> _parseVehicles(List<String> raw) =>
       raw.map((lineStr) {
         if (lineStr.isEmpty) return <LineVehicle>[];
         return lineStr.split(',').where((s) => s.isNotEmpty).map((s) {
           final p = s.split(':');
           return LineVehicle(
-            number:    int.tryParse(p[0]) ?? 1,
-            vehicleId: p[1],
-            status:    p[2],
-            note:      p.length > 3 && p[3].isNotEmpty ? p[3] : null,
-            ownerName: p.length > 4 ? p[4] : '',
+            number:           int.tryParse(p[0]) ?? 1,
+            vehicleId:        p[1],
+            status:           p[2],
+            note:             p.length > 3  && p[3].isNotEmpty  ? p[3]  : null,
+            ownerName:        p.length > 4  ? p[4]  : '',
+            carLicExpiry:     p.length > 5  ? p[5]  : '',
+            insuranceExpiry:  p.length > 6  ? p[6]  : '',
+            operatingLicNum:  p.length > 7  ? p[7]  : '',
+            operatingLicDate: p.length > 8  ? p[8]  : '',
+            rfidTag:          p.length > 9  ? p[9]  : '',
+            loadingExpiry:    p.length > 10 ? p[10] : '',
+            maker:            p.length > 11 ? p[11] : '',
+            model:            p.length > 12 ? p[12] : '',
+            year:             p.length > 13 ? p[13] : '',
+            chassis:          p.length > 14 ? p[14] : '',
+            ownerPhone:       p.length > 15 ? p[15] : '',
+            ownerId:          p.length > 16 ? p[16] : '',
+            driverName:       p.length > 17 ? p[17] : '',
           );
         }).toList();
       }).toList();
 
+  // ✅ دالة save المحدّثة لحفظ جميع الحقول
   Future<void> save() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -384,7 +416,10 @@ class LineStorage {
       _vehiclesKey,
       globalVehicles.map((list) =>
           list.map((v) =>
-              '${v.number}:${v.vehicleId}:${v.status}:${v.note ?? ""}:${v.ownerName}')
+              '${v.number}:${v.vehicleId}:${v.status}:${v.note ?? ""}:${v.ownerName}:'
+              '${v.carLicExpiry}:${v.insuranceExpiry}:${v.operatingLicNum}:${v.operatingLicDate}:'
+              '${v.rfidTag}:${v.loadingExpiry}:${v.maker}:${v.model}:${v.year}:${v.chassis}:'
+              '${v.ownerPhone}:${v.ownerId}:${v.driverName}')
           .join(',')).toList(),
     );
   }
@@ -434,7 +469,7 @@ String eventDate(String time) {
   if (time.contains(' ')) return time.split(' ')[0];
   // قديم: بس وقت بدون تاريخ — نرجع اليوم كافتراضي
   final now = DateTime.now();
-  return '\${now.year}-\${now.month.toString().padLeft(2,"0")}-\${now.day.toString().padLeft(2,"0")}';
+  return '${now.year}-${now.month.toString().padLeft(2,"0")}-${now.day.toString().padLeft(2,"0")}';
 }
 
 // استخرج الوقت فقط من time string
@@ -575,68 +610,140 @@ void loadDummyData() {
   // ── الخطوط والمركبات ─────────────────────
   globalLines = [
     LineModel(name: '[101] الخليل → بيت لحم', subtitle: '3 في الانتظار', supervisor: 'خالد كرم طرشان',
-      entryGateId: 'g1', exitGateId: 'g2', fare: '8', loadingSlots: 5),
+      gateId: '101', entryGateId: 'g1', exitGateId: 'g2', fare: '8', loadingSlots: 5),
     LineModel(name: '[102] الخليل → القدس',   subtitle: '2 في الانتظار', supervisor: 'يوسف نادر سلامة',
-      entryGateId: 'g3', exitGateId: 'g4', fare: '15', loadingSlots: 4),
+      gateId: '102', entryGateId: 'g3', exitGateId: 'g4', fare: '15', loadingSlots: 4),
     LineModel(name: '[103] الخليل → رام الله', subtitle: '1 في الانتظار', supervisor: 'خالد كرم طرشان',
-      entryGateId: 'g1', exitGateId: 'g2', fare: '12', loadingSlots: 3),
+      gateId: '103', entryGateId: 'g1', exitGateId: 'g2', fare: '12', loadingSlots: 3),
   ];
 
   globalVehicles = [
     // خط 101
     [
-      LineVehicle(number: 1, vehicleId: '12-234-12', status: 'جاهزة',       ownerName: 'أحمد إسماعيل الحج', carLicExpiry: '2026-06-01', insuranceExpiry: '2026-05-15', loadingExpiry: '2025-08-01'),
-      LineVehicle(number: 2, vehicleId: '34-567-89', status: 'في الانتظار', ownerName: 'محمد أحمد العمر',   carLicExpiry: '2025-11-20', insuranceExpiry: '2025-10-10', loadingExpiry: '2025-07-15'),
-      LineVehicle(number: 3, vehicleId: '56-789-01', status: 'مخالفة',      ownerName: 'سامر يوسف ناصر',   carLicExpiry: '2026-02-28', insuranceExpiry: '2026-01-05', loadingExpiry: '2025-06-30'),
+      LineVehicle(
+        number: 1, 
+        vehicleId: '12-234-12', 
+        status: 'في الخط',
+        ownerName: 'محمود خليل أبو صالح',
+        carLicExpiry: '2026-06-01', 
+        insuranceExpiry: '2026-05-15', 
+        loadingExpiry: '2025-08-01',
+        operatingLicNum: 'OP-2023-1001',
+        operatingLicDate: '2023-01-15',
+        rfidTag: 'RFID-101-AAA',
+        maker: 'Toyota',
+        model: 'Hiace',
+        year: '2018',
+        chassis: 'JTD1234567890',
+        ownerPhone: '0598765001',
+        ownerId: '900111222',
+        driverName: 'أحمد إسماعيل الحج',
+      ),
+      LineVehicle(
+        number: 2, 
+        vehicleId: '34-567-89', 
+        status: 'في الانتظار', 
+        ownerName: 'عمر فيصل الطويل',   
+        carLicExpiry: '2025-11-20', 
+        insuranceExpiry: '2025-10-10', 
+        loadingExpiry: '2025-07-15',
+        operatingLicNum: 'OP-2022-2045',
+        operatingLicDate: '2022-05-20',
+        rfidTag: 'RFID-101-BBB',
+        maker: 'Mercedes',
+        model: 'Sprinter',
+        year: '2020',
+        chassis: 'WDB9066091234567',
+        ownerPhone: '0599876002',
+        ownerId: '900222333',
+        driverName: 'محمد أحمد العمر',
+      ),
+      LineVehicle(
+        number: 3, 
+        vehicleId: '56-789-01', 
+        status: 'مخالفة',      
+        ownerName: 'ياسر محمود الدبس',   
+        carLicExpiry: '2026-02-28', 
+        insuranceExpiry: '2026-01-05', 
+        loadingExpiry: '2025-06-30',
+        operatingLicNum: 'OP-2021-3078',
+        operatingLicDate: '2021-08-10',
+        rfidTag: 'RFID-101-CCC',
+        maker: 'Hyundai',
+        model: 'H350',
+        year: '2019',
+        chassis: 'KMJST35GBKU123456',
+        ownerPhone: '0597654003',
+        ownerId: '900333444',
+        driverName: 'سامر يوسف ناصر',
+      ),
     ],
     // خط 102
     [
-      LineVehicle(number: 1, vehicleId: '78-901-23', status: 'جاهزة',       ownerName: 'محمد أحمد العمر',   carLicExpiry: '2026-09-10', insuranceExpiry: '2026-08-20', loadingExpiry: '2025-09-01'),
-      LineVehicle(number: 2, vehicleId: '90-123-45', status: 'في الانتظار', ownerName: 'أحمد إسماعيل الحج', carLicExpiry: '2025-12-15', insuranceExpiry: '2025-11-30', loadingExpiry: '2025-08-20'),
+      LineVehicle(
+        number: 1, 
+        vehicleId: '78-901-23', 
+        status: 'في الخط',       
+        ownerName: 'سعيد رامي حسونة',   
+        carLicExpiry: '2026-09-10', 
+        insuranceExpiry: '2026-08-20', 
+        loadingExpiry: '2025-09-01',
+        operatingLicNum: 'OP-2023-4123',
+        operatingLicDate: '2023-03-05',
+        rfidTag: 'RFID-102-AAA',
+        maker: 'Ford',
+        model: 'Transit',
+        year: '2021',
+        chassis: 'WF0VXXTTGVDC12345',
+        ownerPhone: '0596543004',
+        ownerId: '900444555',
+        driverName: 'محمد أحمد العمر',
+      ),
+      LineVehicle(
+        number: 2, 
+        vehicleId: '90-123-45', 
+        status: 'في الانتظار', 
+        ownerName: 'طارق نبيل جرادات', 
+        carLicExpiry: '2025-12-15', 
+        insuranceExpiry: '2025-11-30', 
+        loadingExpiry: '2025-08-20',
+        operatingLicNum: 'OP-2022-5156',
+        operatingLicDate: '2022-07-12',
+        rfidTag: 'RFID-102-BBB',
+        maker: 'Toyota',
+        model: 'Coaster',
+        year: '2017',
+        chassis: 'JTGDE413507654321',
+        ownerPhone: '0595432005',
+        ownerId: '900555666',
+        driverName: 'أحمد إسماعيل الحج',
+      ),
     ],
     // خط 103
     [
-      LineVehicle(number: 1, vehicleId: '11-222-33', status: 'جاهزة',       ownerName: 'سامر يوسف ناصر',   carLicExpiry: '2026-07-05', insuranceExpiry: '2026-06-15', loadingExpiry: '2025-10-01'),
+      LineVehicle(
+        number: 1, 
+        vehicleId: '11-222-33', 
+        status: 'جاهزة',       
+        ownerName: 'بلال كمال شاهين',   
+        carLicExpiry: '2026-07-05', 
+        insuranceExpiry: '2026-06-15', 
+        loadingExpiry: '2025-10-01',
+        operatingLicNum: 'OP-2020-6189',
+        operatingLicDate: '2020-11-25',
+        rfidTag: 'RFID-103-AAA',
+        maker: 'Mitsubishi',
+        model: 'Rosa',
+        year: '2016',
+        chassis: 'JL6FE27J9AK098765',
+        ownerPhone: '0594321006',
+        ownerId: '900666777',
+        driverName: 'سامر يوسف ناصر',
+      ),
     ],
   ];
 
   // ── الأحداث ──────────────────────────────
-  // ── الطلبات الخارجية ─────────────────────
-  globalRequests = [
-    ExternalRequest(
-      id: 'REQ-001', type: RequestType.passengers, status: RequestStatus.accepted,
-      location: 'الخليل — حي الشيخ', destination: 'بيت لحم — المركز',
-      contactPhone: '0599123456', createdAt: '2025-05-19T08:00:00',
-      passengersCount: 4,
-    ),
-    ExternalRequest(
-      id: 'REQ-002', type: RequestType.parcel, status: RequestStatus.cancelled,
-      location: 'الخليل — باب الزاوية', destination: 'رام الله — البيرة',
-      contactPhone: '0598765432', createdAt: '2025-05-19T09:30:00',
-      parcelName: 'مستندات رسمية', parcelDetails: 'مظروف مختوم — عاجل',
-    ),
-    ExternalRequest(
-      id: 'REQ-003', type: RequestType.passengers, status: RequestStatus.accepted,
-      location: 'الخليل — الحرس', destination: 'القدس — باب العمود',
-      contactPhone: '0597654321', createdAt: '2025-05-18T14:00:00',
-      passengersCount: 2,
-      assignedVehicleId: '12-234-12', assignedDriver: 'أحمد إسماعيل الحج',
-      assignedLine: '[101] الخليل → بيت لحم',
-    ),
-    ExternalRequest(
-      id: 'REQ-004', type: RequestType.parcel, status: RequestStatus.accepted,
-      location: 'الخليل — صحراء', destination: 'نابلس — المركز',
-      contactPhone: '0592111222', createdAt: '2025-05-18T11:15:00',
-      parcelName: 'بضاعة تجارية', parcelDetails: 'صندوق متوسط الحجم',
-    ),
-    ExternalRequest(
-      id: 'REQ-005', type: RequestType.passengers, status: RequestStatus.cancelled,
-      location: 'الخليل — عين سارة', destination: 'الخليل — المستشفى',
-      contactPhone: '0591999888', createdAt: '2025-05-17T16:45:00',
-      passengersCount: 1,
-    ),
-  ];
-
   globalEvents = [
     EventItem(vehicleId: '12-234-12', location: '[101] الخليل → بيت لحم', time: '2025-05-19 08:30', type: EventType.entry),
     EventItem(vehicleId: '34-567-89', location: '[101] الخليل → بيت لحم', time: '2025-05-19 09:15', type: EventType.entry),

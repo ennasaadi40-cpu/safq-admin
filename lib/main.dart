@@ -55,6 +55,13 @@ part 'requests_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // ⚠️⚠️⚠️ حذف البيانات القديمة - احذف هذه الأسطر بعد أول تشغيل ⚠️⚠️⚠️
+  final prefsTemp = await SharedPreferences.getInstance();
+  await prefsTemp.clear();
+  print('✅ تم حذف جميع البيانات القديمة من SharedPreferences');
+  // ⚠️⚠️⚠️ نهاية الكود المؤقت - احذف حتى هنا بعد أول تشغيل ⚠️⚠️⚠️
+  
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey: 'AIzaSyCOsb6PStcSZY5k_YQctGVEIfoP8TuU-ug',

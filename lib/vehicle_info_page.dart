@@ -36,8 +36,12 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
   }
 
   UserModel? get _driver {
-    try { return globalUsers.firstWhere((u) => u.name == (_lv.ownerName) && u.role == 'سائق'); }
-    catch (_) { return null; }
+    if (_lv.driverName.isEmpty) return null;
+    try {
+      return globalUsers.firstWhere((u) => u.name == _lv.driverName && u.role == 'سائق');
+    } catch (_) {
+      return null;
+    }
   }
   UserModel? get _owner {
     try { return globalUsers.firstWhere((u) => u.name == (_lv.ownerName) && u.role == 'مالك سيارة'); }
@@ -112,7 +116,7 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
               tRow('رقم اللوحة', lv.vehicleId),
               tRow('الحالة', lv.status),
               tRow('اسم المالك', lv.ownerName.isNotEmpty ? lv.ownerName : '—'),
-              tRow('رقم الخط', line.name),
+              tRow('رقم الخط', line.name.replaceAll('→', '-')),
             ],
           ),
           pw.SizedBox(height: 16),
@@ -172,7 +176,6 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
     final carNum      = lv.vehicleId;
     final rfidTag     = lv.rfidTag.isNotEmpty ? lv.rfidTag : '—';
     final opLicNum    = lv.operatingLicNum.isNotEmpty ? lv.operatingLicNum : '—';
-    final lineNum     = line.gateId.isNotEmpty ? line.gateId : '—';
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -286,11 +289,10 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                   title: 'السائق',
                   accentColor: const Color(0xFF4B9EFF),
                   rows: [
-                    _Row('الاسم',               _driver?.name       ?? lv.ownerName),
+                    _Row('الاسم',               lv.driverName.isNotEmpty ? lv.driverName : 'بدون سائق'),
                     _Row('رقم الهوية',           _driver?.idNumber   ?? '—'),
                     _Row('رقم الهاتف',           _driver?.phone      ?? '—'),
                     _Row('رقم رخصة القيادة',     _driver?.licenseNum ?? '—'),
-                    _Row('تاريخ إصدار الرخصة',   _driver?.licenseIssueDate ?? '—'),
                     _Row('درجة الرخصة',          _driver?.licenseGrade.isNotEmpty == true ? _driver!.licenseGrade : 'نقل عام'),
                   ],
                 ),
@@ -302,10 +304,13 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                   title: 'المركبة',
                   accentColor: const Color(0xFF00C897),
                   rows: [
-                    _Row('رقم السيارة',   carNum),
-                    _Row('وسم RFID',       rfidTag),
-                    _Row('نوع السيارة',   lv.operatingLicNum.isNotEmpty ? '—' : '—'),
-                    _Row('اسم المحطة',    'محطة الحافلات المركزية — الخليل'),
+                    _Row('رقم اللوحة',        lv.vehicleId),
+                    _Row('وسم RFID',          lv.rfidTag.isNotEmpty ? lv.rfidTag : '—'),
+                    _Row('الشركة المصنعة',    lv.maker.isNotEmpty ? lv.maker : '—'),
+                    _Row('الطراز',            lv.model.isNotEmpty ? lv.model : '—'),
+                    _Row('سنة الإنتاج',       lv.year.isNotEmpty ? lv.year : '—'),
+                    _Row('رقم الشاصي',        lv.chassis.isNotEmpty ? lv.chassis : '—'),
+                    _Row('اسم المحطة',       'محطة الحافلات المركزية — الخليل'),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -322,28 +327,23 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                         badge: expiryBadge('الرخصة', lv.carLicExpiry.isNotEmpty ? lv.carLicExpiry : '—')),
                     _Row('انتهاء التأمين',        lv.insuranceExpiry.isNotEmpty ? lv.insuranceExpiry : '—',
                         badge: expiryBadge('التأمين', lv.insuranceExpiry.isNotEmpty ? lv.insuranceExpiry : '—')),
+                    _Row('انتهاء التحميل', lv.loadingExpiry.isNotEmpty ? lv.loadingExpiry : '—',
+                        badge: expiryBadge('التحميل', lv.loadingExpiry)),
                   ],
                 ),
-
+                const SizedBox(height: 12),
 
                 // بطاقة المالك
-                Builder(builder: (ctx) {
-                  // ابحث عن المالك في globalUsers
-                  UserModel? ownerUser;
-                  try { ownerUser = globalUsers.firstWhere((u) => u.name == lv.ownerName && u.role == 'مالك سيارة'); } catch (_) {}
-                  // إذا ما لقيناه كمالك، جرب كسائق
-                  ownerUser ??= _driver;
-                  return _VInfoCard(
-                    icon: Icons.badge_outlined,
-                    title: 'المالك',
-                    accentColor: const Color(0xFFB47AFF),
-                    rows: [
-                      _Row('اسم المالك', lv.ownerName.isNotEmpty ? lv.ownerName : widget.ownerName),
-                      _Row('رقم الهاتف', ownerUser?.phone.isNotEmpty == true ? ownerUser!.phone : '—'),
-                      _Row('رقم الهوية', ownerUser?.idNumber.isNotEmpty == true ? ownerUser!.idNumber : '—'),
-                    ],
-                  );
-                }),
+                _VInfoCard(
+                  icon: Icons.badge_outlined,
+                  title: 'المالك',
+                  accentColor: const Color(0xFFB47AFF),
+                  rows: [
+                    _Row('اسم المالك', lv.ownerName.isNotEmpty ? lv.ownerName : '—'),
+                    _Row('رقم الهاتف', lv.ownerPhone.isNotEmpty ? lv.ownerPhone : '—'),
+                    _Row('رقم الهوية', lv.ownerId.isNotEmpty ? lv.ownerId : '—'),
+                  ],
+                ),
                 const SizedBox(height: 12),
 
                 // بطاقة الخط
@@ -353,10 +353,24 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                   accentColor: const Color(0xFFFF5A5F),
                   rows: [
                     _Row('اسم الخط',    line.name),
-                    _Row('رقم الخط',    lineNum),
+                    _Row('رقم الخط', line.gateId.isNotEmpty ? line.gateId : '—'),
                     _Row('اسم المحطة', 'محطة الخليل المركزية'),
-                    _Row('بوابة الدخول', line.entryGateId.isNotEmpty ? line.entryGateId : '—'),
-                    _Row('بوابة الخروج', line.exitGateId.isNotEmpty  ? line.exitGateId  : '—'),
+                    _Row('بوابة الدخول', () {
+                      if (line.entryGateId.isEmpty) return '—';
+                      final gate = globalGates.cast<GateModel?>().firstWhere(
+                        (g) => g?.id == line.entryGateId, 
+                        orElse: () => null,
+                      );
+                      return gate?.label ?? line.entryGateId;
+                    }()),
+                    _Row('بوابة الخروج', () {
+                      if (line.exitGateId.isEmpty) return '—';
+                      final gate = globalGates.cast<GateModel?>().firstWhere(
+                        (g) => g?.id == line.exitGateId, 
+                        orElse: () => null,
+                      );
+                      return gate?.label ?? line.exitGateId;
+                    }()),
                   ],
                 ),
 
