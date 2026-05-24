@@ -11,8 +11,7 @@ class _UsersPageState extends State<UsersPage>
     with DarkModeRebuild<UsersPage>, SearchFilterMixin<UserModel> {
   final TextEditingController _searchCtrl = TextEditingController();
 
-  // SearchFilterMixin overrides
-  @override List<String> get filterOptions => ['الكل', 'السائقون', 'موظف أمن', 'مشرف خط'];
+  @override List<String> get filterOptions => [L.get('all'), L.get('driver'), L.get('security'), L.get('supervisor_role')];
 
   @override
   bool itemMatchesSearch(UserModel u, String q) =>
@@ -20,8 +19,10 @@ class _UsersPageState extends State<UsersPage>
 
   @override
   bool itemMatchesFilter(UserModel u, String f) {
-    if (f == 'السائقون') return u.role == 'سائق';
-    return u.role == f;
+    if (f == L.get('driver'))          return u.role == 'سائق';
+    if (f == L.get('security'))        return u.role == 'موظف أمن';
+    if (f == L.get('supervisor_role')) return u.role == 'مشرف خط';
+    return false;
   }
 
   List<UserModel> get _filtered => applyFilter(globalUsers);
@@ -48,25 +49,20 @@ class _UsersPageState extends State<UsersPage>
   Widget build(BuildContext context) {
     final users = _filtered;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Column(
         children: [
-          // ── Header card ──────────────────────────
           Container(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             decoration: const BoxDecoration(color: Color(0xFF2D3A5C)),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text('المستخدمون',
-                      style: const TextStyle(color: Colors.white,
-                          fontWeight: FontWeight.bold, fontSize: 18)),
-                ),
-              ],
-            ),
+            child: Row(children: [
+              Expanded(
+                child: Text(L.get('users'),
+                    style: const TextStyle(color: Colors.white,
+                        fontWeight: FontWeight.bold, fontSize: 18)),
+              ),
+            ]),
           ),
-
-          // ── Content ──────────────────────────────
           Expanded(
             child: Container(
               color: Theme.of(context).scaffoldBackgroundColor,
@@ -74,41 +70,34 @@ class _UsersPageState extends State<UsersPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title + Add button
-                  Row(
-                    children: [
-                      const Spacer(),
-                      _Tap(
-                        onTap: () async {
-                          final newUser = await Navigator.push<UserModel>(
-                            context,
-                            MaterialPageRoute(builder: (_) => const AddUserPage()),
-                          );
-                          if (newUser != null) {
-                            setState(() => globalUsers.add(newUser));
-                            autoSave();
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2D3A5C),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.add, color: Colors.white, size: 16),
-                              SizedBox(width: 4),
-                              Text('إضافة', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
+                  Row(children: [
+                    const Spacer(),
+                    _Tap(
+                      onTap: () async {
+                        final newUser = await Navigator.push<UserModel>(
+                          context,
+                          MaterialPageRoute(builder: (_) => const AddUserPage()),
+                        );
+                        if (newUser != null) {
+                          setState(() => globalUsers.add(newUser));
+                          autoSave();
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D3A5C),
+                          borderRadius: BorderRadius.circular(20),
                         ),
+                        child: Row(children: [
+                          const Icon(Icons.add, color: Colors.white, size: 16),
+                          const SizedBox(width: 4),
+                          Text(L.get('add'), style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                        ]),
                       ),
-                    ],
-                  ),
+                    ),
+                  ]),
                   const SizedBox(height: 12),
-
-                  // ── Filter tabs ─────────────────────
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -136,13 +125,10 @@ class _UsersPageState extends State<UsersPage>
                     }).toList(),
                   ),
                   const SizedBox(height: 14),
-
-                  // ── User list ───────────────────────
                   Expanded(
                     child: users.isEmpty
-                        ? Center(
-                            child: Text('لا توجد نتائج',
-                                style: TextStyle(color: Colors.grey[400], fontSize: 15)))
+                        ? Center(child: Text(L.get('no_data'),
+                            style: TextStyle(color: Colors.grey[400], fontSize: 15)))
                         : ListView.builder(
                             itemCount: users.length,
                             itemBuilder: (_, i) {
@@ -152,69 +138,45 @@ class _UsersPageState extends State<UsersPage>
                                   builder: (_) => _UserInfoPage(user: u),
                                 )),
                                 child: Container(
-                                margin: const EdgeInsets.only(bottom: 10),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: context.cardColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.04),
-                                      blurRadius: 5)],
-                                ),
-                                child: Row(
-                                  children: [
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: context.cardColor,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 5)],
+                                  ),
+                                  child: Row(children: [
                                     CircleAvatar(
                                       radius: 22,
-                                      backgroundColor:
-                                          const Color(0xFF2D3A5C).withValues(alpha: 0.1),
-                                      child: Text(
-                                        u.name[0],
-                                        style: TextStyle(
-                                            color: context.textPrimary,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
-                                      ),
+                                      backgroundColor: const Color(0xFF2D3A5C).withValues(alpha: 0.1),
+                                      child: Text(u.name[0],
+                                          style: TextStyle(color: context.textPrimary,
+                                              fontWeight: FontWeight.bold, fontSize: 16)),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(u.name,
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                  color: context.textPrimary)),
-                                          const SizedBox(height: 3),
-                                          Text(u.role,
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.white70)),
-                                        ],
-                                      ),
+                                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                        Text(u.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimary)),
+                                        const SizedBox(height: 3),
+                                        Text(u.role, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                                      ]),
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 5),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                                       decoration: BoxDecoration(
                                         color: _statusBg(u.status),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(u.status,
-                                          style: TextStyle(
-                                              color: _statusColor(u.status),
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12)),
+                                          style: TextStyle(color: _statusColor(u.status),
+                                              fontWeight: FontWeight.bold, fontSize: 12)),
                                     ),
                                     const SizedBox(width: 8),
                                     _Tap(
                                       onTap: () async {
                                         final updated = await Navigator.push<UserModel>(
                                           context,
-                                          MaterialPageRoute(
-                                            builder: (_) => EditUserPage(user: u),
-                                          ),
+                                          MaterialPageRoute(builder: (_) => EditUserPage(user: u)),
                                         );
                                         if (updated != null) {
                                           setState(() {
@@ -230,8 +192,7 @@ class _UsersPageState extends State<UsersPage>
                                           color: context.textPrimary.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: const Icon(Icons.edit_outlined,
-                                            color: Color(0xFF2D3A5C), size: 18),
+                                        child: const Icon(Icons.edit_outlined, color: Color(0xFF2D3A5C), size: 18),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -240,31 +201,21 @@ class _UsersPageState extends State<UsersPage>
                                         final confirm = await showDialog<bool>(
                                           context: context,
                                           builder: (_) => Directionality(
-                                            textDirection: TextDirection.rtl,
+                                            textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
                                             child: AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(16)),
-                                              title: Text('حذف المستخدم',
-                                                  style: TextStyle(
-                                                      color: context.textPrimary,
-                                                      fontWeight: FontWeight.bold)),
-                                              content: Text(
-                                                  'هل أنت متأكد أنك تريد حذف "${u.name}"؟'),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                              title: Text(L.get('delete_confirm'),
+                                                  style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold)),
+                                              content: Text('${L.get('delete_confirm')} "${u.name}"؟'),
                                               actions: [
                                                 TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(context, false),
-                                                  child: Text('إلغاء',
-                                                      style: TextStyle(
-                                                          color: context.textSecondary)),
+                                                  onPressed: () => Navigator.pop(context, false),
+                                                  child: Text(L.get('cancel'), style: TextStyle(color: context.textSecondary)),
                                                 ),
                                                 TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.pop(context, true),
-                                                  child: const Text('حذف',
-                                                      style: TextStyle(
-                                                          color: Colors.red,
-                                                          fontWeight: FontWeight.bold)),
+                                                  onPressed: () => Navigator.pop(context, true),
+                                                  child: Text(L.get('delete'),
+                                                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                                                 ),
                                               ],
                                             ),
@@ -281,13 +232,12 @@ class _UsersPageState extends State<UsersPage>
                                           color: Colors.red.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
-                                        child: const Icon(Icons.delete_outline,
-                                            color: Colors.red, size: 18),
+                                        child: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
                                       ),
                                     ),
-                                  ],
+                                  ]),
                                 ),
-                              ));
+                              );
                             },
                           ),
                   ),

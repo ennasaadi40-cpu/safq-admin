@@ -1,7 +1,5 @@
 part of station_app;
 
-// firebase_auth و firebase_core مستوردان في main.dart
-
 // ─────────────────────────────────────────────
 //  Login Page
 // ─────────────────────────────────────────────
@@ -20,11 +18,6 @@ class _LoginPageState extends State<LoginPage> {
   final _passFocus  = FocusNode();
   bool _passVisible = false;
   bool _loading     = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   void _login() async {
     if (!_formKey.currentState!.validate()) return;
@@ -47,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: _passCtrl.text,
       );
@@ -81,95 +74,10 @@ class _LoginPageState extends State<LoginPage> {
     ));
   }
 
-  Future<void> _forgotPassword() async {
-    final emailCtrl = TextEditingController(text: adminEmail);
-    await showDialog(
-      context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (ctx, setDlg) => Directionality(
-          textDirection: TextDirection.rtl,
-          child: AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            backgroundColor: const Color(0xFF1a2d50),
-            title: const Row(children: [
-              Icon(Icons.lock_reset_outlined, color: Color(0xFFF5B800), size: 22),
-              SizedBox(width: 10),
-              Text('إعادة تعيين كلمة المرور',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-            ]),
-            content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('سيتم إرسال رابط إعادة التعيين إلى البريد الإلكتروني المسجّل.',
-                  style: TextStyle(color: Color(0xFF8aaccc), fontSize: 12)),
-              const SizedBox(height: 12),
-              TextField(
-                controller: emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                textDirection: TextDirection.ltr,
-                style: const TextStyle(color: Colors.white, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: 'البريد الإلكتروني',
-                  hintStyle: const TextStyle(color: Color(0xFF4a5f7a), fontSize: 13),
-                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF4a5f7a), size: 17),
-                  filled: true,
-                  fillColor: const Color(0xFF0f1c35),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2a3f68))),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2a3f68))),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFF5B800), width: 1.5)),
-                ),
-              ),
-            ]),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('إلغاء', style: TextStyle(color: Color(0xFF8aaccc))),
-              ),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF5B800),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                icon: const Icon(Icons.send_rounded, color: Color(0xFF0f1c35), size: 16),
-                label: const Text('إرسال', style: TextStyle(color: Color(0xFF0f1c35), fontWeight: FontWeight.bold)),
-                onPressed: () async {
-                  final email = emailCtrl.text.trim();
-                  if (email.isEmpty) return;
-                  Navigator.pop(context);
-                  try {
-                    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('تم إرسال رابط إعادة التعيين إلى $email', textDirection: TextDirection.rtl),
-                      backgroundColor: const Color(0xFF2E7D32),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      margin: const EdgeInsets.all(16),
-                    ));
-                  } on FirebaseAuthException catch (e) {
-                    if (!mounted) return;
-                    String msg = 'حدث خطأ';
-                    if (e.code == 'user-not-found') msg = 'البريد الإلكتروني غير مسجّل';
-                    if (e.code == 'invalid-email') msg = 'البريد الإلكتروني غير صحيح';
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text(msg, textDirection: TextDirection.rtl),
-                      backgroundColor: const Color(0xFFE53935),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      margin: const EdgeInsets.all(16),
-                    ));
-                  }
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   void dispose() {
-    _userCtrl.dispose(); _emailCtrl.dispose(); _passCtrl.dispose(); _emailFocus.dispose(); _passFocus.dispose();
+    _userCtrl.dispose(); _emailCtrl.dispose(); _passCtrl.dispose();
+    _emailFocus.dispose(); _passFocus.dispose();
     super.dispose();
   }
 
@@ -189,23 +97,17 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
 
-                    // ── Logo image ────────────────
+                    // ── Logo ──────────────────────────
                     Container(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Image.asset(
-                        'assets/logo.png',
-                        height: 80,
-                        fit: BoxFit.contain,
-                      ),
+                      child: Image.asset('assets/logo.png', height: 80, fit: BoxFit.contain),
                     ),
 
-                    const SizedBox(height: 28),
-
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 50),
 
                     // ── Username ──────────────────────
                     TextFormField(
@@ -255,11 +157,8 @@ class _LoginPageState extends State<LoginPage> {
                         Icons.lock_outline_rounded,
                         suffix: IconButton(
                           icon: Icon(
-                            _passVisible
-                                ? Icons.visibility_off_outlined
-                                : Icons.remove_red_eye_outlined,
-                            size: 17,
-                            color: const Color(0xFF4a5f7a),
+                            _passVisible ? Icons.visibility_off_outlined : Icons.remove_red_eye_outlined,
+                            size: 17, color: const Color(0xFF4a5f7a),
                           ),
                           onPressed: () => setState(() => _passVisible = !_passVisible),
                         ),
@@ -278,32 +177,28 @@ class _LoginPageState extends State<LoginPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFF5B800),
                           disabledBackgroundColor: const Color(0xFFF5B800).withValues(alpha: 0.5),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           elevation: 0,
                         ),
                         icon: _loading
-                            ? const SizedBox(
-                                width: 18, height: 18,
-                                child: CircularProgressIndicator(
-                                    color: Color(0xFF0f1c35), strokeWidth: 2))
-                            : const Icon(Icons.login_rounded,
-                                color: Color(0xFF0f1c35), size: 18),
+                            ? const SizedBox(width: 18, height: 18,
+                                child: CircularProgressIndicator(color: Color(0xFF0f1c35), strokeWidth: 2))
+                            : const Icon(Icons.login_rounded, color: Color(0xFF0f1c35), size: 18),
                         label: _loading
                             ? const SizedBox.shrink()
-                            : Text('تسجيل الدخول',
-                                style: const TextStyle(
-                                    color: Color(0xFF0f1c35),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold)),
+                            : const Text('تسجيل الدخول',
+                                style: TextStyle(color: Color(0xFF0f1c35), fontSize: 15, fontWeight: FontWeight.bold)),
                       ),
                     ),
 
                     const SizedBox(height: 12),
 
-                    // ── Forgot password ───────────────
+                    // ── Forgot password → ForgotPasswordPage ──
                     TextButton(
-                      onPressed: _forgotPassword,
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                      ),
                       child: const Text(
                         'نسيت كلمة المرور؟',
                         style: TextStyle(color: Color(0xFF8aaccc), fontSize: 12),
@@ -320,33 +215,19 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  InputDecoration _dec(String hint, IconData icon, {Widget? suffix}) =>
-      InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFF4a5f7a), fontSize: 13),
-        prefixIcon: Icon(icon, color: const Color(0xFF4a5f7a), size: 17),
-        suffixIcon: suffix,
-        filled: true,
-        fillColor: const Color(0xFF1a2d50),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF2a3f68))),
-        enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFF2a3f68))),
-        focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide:
-                const BorderSide(color: Color(0xFFF5B800), width: 1.5)),
-        errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFFE53935))),
-        focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Color(0xFFE53935))),
-        errorStyle:
-            const TextStyle(color: Color(0xFFE53935), fontSize: 11),
-      );
+  InputDecoration _dec(String hint, IconData icon, {Widget? suffix}) => InputDecoration(
+    hintText: hint,
+    hintStyle: const TextStyle(color: Color(0xFF4a5f7a), fontSize: 13),
+    prefixIcon: Icon(icon, color: const Color(0xFF4a5f7a), size: 17),
+    suffixIcon: suffix,
+    filled: true,
+    fillColor: const Color(0xFF1a2d50),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2a3f68))),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2a3f68))),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFF5B800), width: 1.5)),
+    errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE53935))),
+    focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE53935))),
+    errorStyle: const TextStyle(color: Color(0xFFE53935), fontSize: 11),
+  );
 }

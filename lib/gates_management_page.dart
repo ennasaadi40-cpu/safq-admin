@@ -21,9 +21,10 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
     final floor  = _floorCtrl.text.trim();
     final number = _numberCtrl.text.trim();
     if (floor.isEmpty || number.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('أدخل رقم الطابق ورقم البوابة'),
-        backgroundColor: Color(0xFFFF5A5F),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(L.get('val_floor_required'),
+            textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr),
+        backgroundColor: const Color(0xFFFF5A5F),
       ));
       return;
     }
@@ -38,19 +39,19 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
     _floorCtrl.clear(); _numberCtrl.clear(); _ipCtrl.clear();
     autoSave();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('تمت إضافة البوابة: ${newGate.label}',
-          textDirection: TextDirection.rtl),
+      content: Text('${L.get('gate_added')} ${newGate.label}',
+          textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr),
       backgroundColor: const Color(0xFF00C897),
     ));
   }
 
   void _deleteGate(GateModel gate) {
     showDialog(context: context, builder: (_) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('حذف البوابة'),
-        content: Text('هل تريد حذف: ${gate.label}؟'),
+        title: Text(L.get('delete_gate')),
+        content: Text('${L.get('delete_gate_confirm')} ${gate.label}؟'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context),
               child: Text(L.get('cancel'))),
@@ -60,7 +61,8 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
               autoSave();
               Navigator.pop(context);
             },
-            child: Text(L.get('delete'), style: TextStyle(color: Color(0xFFFF5A5F))),
+            child: Text(L.get('delete'),
+                style: const TextStyle(color: Color(0xFFFF5A5F))),
           ),
         ],
       ),
@@ -70,20 +72,20 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
           backgroundColor: const Color(0xFF2D3A5C),
           foregroundColor: Colors.white,
-          title: const Text('إدارة البوابات',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+          title: Text(L.get('gates'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-            // ── إضافة بوابة جديدة ──────────────────
+            // ── Add New Gate ────────────────────────
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -104,14 +106,14 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                         size: 16, color: Color(0xFF4B9EFF)),
                   ),
                   const SizedBox(width: 8),
-                  Text('إضافة بوابة جديدة', style: TextStyle(
+                  Text(L.get('add_new_gate'), style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 14,
-                      color: const Color(0xFF4B9EFF))),
+                      color: Color(0xFF4B9EFF))),
                 ]),
                 const SizedBox(height: 16),
 
-                // رقم الطابق
-                Text('رقم الطابق', style: TextStyle(
+                // Floor Number
+                Text(L.get('floor_number'), style: TextStyle(
                     fontSize: 12, fontWeight: FontWeight.w600,
                     color: context.textSecondary)),
                 const SizedBox(height: 6),
@@ -121,10 +123,10 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                   textInputAction: TextInputAction.next,
                   style: TextStyle(color: context.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'مثال: 1',
+                    hintText: L.get('floor_example'),
                     hintStyle: TextStyle(color: context.textSecondary, fontSize: 13),
-                    prefixIcon: Icon(Icons.layers_outlined,
-                        color: const Color(0xFF4B9EFF), size: 18),
+                    prefixIcon: const Icon(Icons.layers_outlined,
+                        color: Color(0xFF4B9EFF), size: 18),
                     filled: true, fillColor: context.bgColor,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
@@ -139,8 +141,8 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                 ),
                 const SizedBox(height: 12),
 
-                // نوع البوابة مدخل / مخرج
-                Text('نوع البوابة', style: TextStyle(
+                // Gate Type — Entrance / Exit
+                Text(L.get('gate_type'), style: TextStyle(
                     fontSize: 12, fontWeight: FontWeight.w600,
                     color: context.textSecondary)),
                 const SizedBox(height: 6),
@@ -153,8 +155,8 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                 ]),
                 const SizedBox(height: 12),
 
-                // رقم البوابة
-                Text('رقم البوابة', style: TextStyle(
+                // Gate Number
+                Text(L.get('gate_number'), style: TextStyle(
                     fontSize: 12, fontWeight: FontWeight.w600,
                     color: context.textSecondary)),
                 const SizedBox(height: 6),
@@ -164,10 +166,10 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                   textInputAction: TextInputAction.next,
                   style: TextStyle(color: context.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'مثال: 1',
+                    hintText: L.get('gate_num_example'),
                     hintStyle: TextStyle(color: context.textSecondary, fontSize: 13),
-                    prefixIcon: Icon(Icons.sensor_door_outlined,
-                        color: const Color(0xFF4B9EFF), size: 18),
+                    prefixIcon: const Icon(Icons.sensor_door_outlined,
+                        color: Color(0xFF4B9EFF), size: 18),
                     filled: true, fillColor: context.bgColor,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
@@ -181,9 +183,10 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text('IP Address', style: TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.w600,
-                    color: context.textSecondary)),
+
+                // IP Address
+                const Text('IP Address', style: TextStyle(
+                    fontSize: 12, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 6),
                 TextField(
                   controller: _ipCtrl,
@@ -193,10 +196,10 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                   onSubmitted: (_) => _addGate(),
                   style: TextStyle(color: context.textPrimary),
                   decoration: InputDecoration(
-                    hintText: 'مثال: 192.168.1.10',
+                    hintText: L.get('ip_example'),
                     hintStyle: TextStyle(color: context.textSecondary, fontSize: 13),
-                    prefixIcon: Icon(Icons.lan_outlined,
-                        color: const Color(0xFF4B9EFF), size: 18),
+                    prefixIcon: const Icon(Icons.lan_outlined,
+                        color: Color(0xFF4B9EFF), size: 18),
                     filled: true, fillColor: context.bgColor,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
@@ -222,8 +225,8 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                           borderRadius: BorderRadius.circular(10)),
                     ),
                     icon: const Icon(Icons.add_rounded, color: Colors.white, size: 18),
-                    label: const Text('إضافة البوابة',
-                        style: TextStyle(color: Colors.white, fontSize: 14,
+                    label: Text(L.get('add_gate'),
+                        style: const TextStyle(color: Colors.white, fontSize: 14,
                             fontWeight: FontWeight.bold)),
                   ),
                 ),
@@ -231,9 +234,9 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
             ),
             const SizedBox(height: 20),
 
-            // ── البوابات الموجودة ───────────────────
+            // ── Existing Gates ──────────────────────
             Row(children: [
-              Text('البوابات المضافة', style: TextStyle(
+              Text(L.get('added_gates'), style: TextStyle(
                   fontWeight: FontWeight.bold, fontSize: 15,
                   color: context.textPrimary)),
               const Spacer(),
@@ -243,7 +246,7 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                   color: const Color(0xFF2D3A5C).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text('${globalGates.length} بوابة',
+                child: Text('${globalGates.length} ${L.get('gate_word')}',
                     style: const TextStyle(fontSize: 12,
                         color: Color(0xFF2D3A5C), fontWeight: FontWeight.bold)),
               ),
@@ -262,7 +265,7 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                   Icon(Icons.sensor_door_outlined,
                       size: 40, color: context.textSecondary),
                   const SizedBox(height: 8),
-                  Text('لا توجد بوابات مضافة',
+                  Text(L.get('no_gates_added'),
                       style: TextStyle(color: context.textSecondary)),
                 ]),
               )
@@ -306,16 +309,20 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                               Text(gate.label, style: TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.bold,
                                   color: context.textPrimary)),
-                              Text('طابق ${gate.floor}  •  ${gate.type}  •  رقم ${gate.number}',
-                                  style: TextStyle(fontSize: 11,
-                                      color: context.textSecondary)),
-                            if (gate.ip.isNotEmpty)
-                              Text('IP: ${gate.ip}',
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF4B9EFF))),
+                              Text(
+                                '${L.get('floor')} ${gate.floor}  •  '
+                                '${gate.type == 'مدخل' ? L.get('entrance') : L.get('exit_gate')}  •  '
+                                '${L.get('gate_number')} ${gate.number}',
+                                style: TextStyle(fontSize: 11,
+                                    color: context.textSecondary)),
+                              if (gate.ip.isNotEmpty)
+                                Text('IP: ${gate.ip}',
+                                    style: const TextStyle(
+                                        fontSize: 11, color: Color(0xFF4B9EFF))),
                             ],
                           )),
                           Row(mainAxisSize: MainAxisSize.min, children: [
-                            // زر التعديل
+                            // Edit button
                             InkWell(
                               onTap: () => _editGate(gate),
                               borderRadius: BorderRadius.circular(8),
@@ -330,7 +337,7 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // زر الحذف
+                            // Delete button
                             InkWell(
                               onTap: () => _deleteGate(gate),
                               borderRadius: BorderRadius.circular(8),
@@ -369,26 +376,27 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (ctx, setDlg) => Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
           child: AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text('تعديل البوابة',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(L.get('edit_gate'),
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             content: Column(mainAxisSize: MainAxisSize.min, children: [
-              // رقم الطابق
+              // Floor Number
               TextField(
                 controller: floorCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'رقم الطابق',
+                  labelText: L.get('floor_number'),
                   prefixIcon: const Icon(Icons.layers_outlined, size: 18),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
                 ),
               ),
               const SizedBox(height: 12),
 
-              // نوع البوابة
+              // Gate Type
               Row(children: [
                 Expanded(child: _dlgTypeBtn('مدخل', type, (v) => setDlg(() => type = v))),
                 const SizedBox(width: 8),
@@ -396,15 +404,16 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
               ]),
               const SizedBox(height: 12),
 
-              // رقم البوابة
+              // Gate Number
               TextField(
                 controller: numberCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'رقم البوابة',
+                  labelText: L.get('gate_number'),
                   prefixIcon: const Icon(Icons.sensor_door_outlined, size: 18),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
                 ),
               ),
             ]),
@@ -431,19 +440,23 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
                         floor:  floor,
                         type:   type,
                         number: number,
+                        ip:     gate.ip,
                       );
                     });
                     autoSave();
                   }
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('تم تحديث البوابة ✓',
-                        textDirection: TextDirection.rtl),
-                    backgroundColor: Color(0xFF00C897),
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(L.get('gate_updated'),
+                        textDirection: L.isArabic
+                            ? TextDirection.rtl
+                            : TextDirection.ltr),
+                    backgroundColor: const Color(0xFF00C897),
                   ));
                 },
                 child: Text(L.get('save'),
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -472,10 +485,13 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
           Icon(label == 'مدخل' ? Icons.login_rounded : Icons.logout_rounded,
               size: 15, color: selected ? color : Colors.grey),
           const SizedBox(width: 5),
-          Text(label, style: TextStyle(
-            fontSize: 13, fontWeight: FontWeight.bold,
-            color: selected ? color : Colors.grey,
-          )),
+          Text(
+            label == 'مدخل' ? L.get('entrance') : L.get('exit_gate'),
+            style: TextStyle(
+              fontSize: 13, fontWeight: FontWeight.bold,
+              color: selected ? color : Colors.grey,
+            ),
+          ),
         ]),
       ),
     );
@@ -498,10 +514,13 @@ class _GatesManagementPageState extends State<_GatesManagementPage> {
         Icon(icon, size: 16,
             color: _type == label ? color : context.textSecondary),
         const SizedBox(width: 6),
-        Text(label, style: TextStyle(
-          fontSize: 13, fontWeight: FontWeight.bold,
-          color: _type == label ? color : context.textSecondary,
-        )),
+        Text(
+          label == 'مدخل' ? L.get('entrance') : L.get('exit_gate'),
+          style: TextStyle(
+            fontSize: 13, fontWeight: FontWeight.bold,
+            color: _type == label ? color : context.textSecondary,
+          ),
+        ),
       ]),
     ),
   );

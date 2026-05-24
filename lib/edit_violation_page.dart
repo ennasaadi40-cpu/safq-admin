@@ -23,6 +23,7 @@ class _EditViolationPageState extends State<_EditViolationPage> with DarkModeReb
   late final _nameCtrl   = TextEditingController(text: widget.violationName);
   late final _msgCtrl    = TextEditingController(text: widget.message);
   late final _amountCtrl = TextEditingController(text: widget.amount);
+  
   InputDecoration _inputDec(String hint) => InputDecoration(
     hintText: hint,
     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
@@ -52,14 +53,14 @@ class _EditViolationPageState extends State<_EditViolationPage> with DarkModeReb
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
           backgroundColor: const Color(0xFF2D3A5C),
           elevation: 0,
-          title: const Text('تعديل المخالفة',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          title: Text(L.get('edit_violation'),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
@@ -80,45 +81,45 @@ class _EditViolationPageState extends State<_EditViolationPage> with DarkModeReb
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: context.dividerColor),
                   ),
-                  child: Text('تعديل المخالفة',
+                  child: Text(L.get('edit_violation'),
                       style: TextStyle(color: context.textSecondary, fontSize: 14)),
                 ),
                 const SizedBox(height: 20),
 
-                _label('رقم المخالفة'),
+                _label(L.get('complaint_number')),
                 TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                  onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _numCtrl,
                   textDirection: TextDirection.ltr,
-                  decoration: _inputDec('ادخل رقم المخالفة ( مثال : A-201 )'),
-                  validator: (v) => v == null || v.isEmpty ? 'مطلوب' : null,
+                  decoration: _inputDec(L.get('enter_violation_num')),
+                  validator: (v) => v == null || v.isEmpty ? L.get('required') : null,
                 ),
                 const SizedBox(height: 16),
 
-                _label('نوع المخالفة'),
+                _label(L.get('violation_type')),
                 TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                  onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _nameCtrl,
-                  decoration: _inputDec('ادخل اسم المخالفة'),
-                  validator: (v) => v == null || v.isEmpty ? 'مطلوب' : null,
+                  decoration: _inputDec(L.get('enter_violation_name')),
+                  validator: (v) => v == null || v.isEmpty ? L.get('required') : null,
                 ),
                 const SizedBox(height: 16),
 
-                _label('وصف المخالفة'),
+                _label(L.get('violation_description')),
                 TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                  onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _msgCtrl,
-                  decoration: _inputDec('ادخل الرسالة'),
+                  decoration: _inputDec(L.get('enter_violation_message')),
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16),
 
-                _label('مبلغ المخالفة (شيكل)'),
+                _label(L.get('violation_amount_shekel')),
                 TextFormField(
-                          controller: _amountCtrl,
+                  controller: _amountCtrl,
                   keyboardType: TextInputType.number,
                   textDirection: TextDirection.ltr,
-                  decoration: _inputDec('ادخل القيمة الأفتراضية (مثال: 120 شيكل)'),
+                  decoration: _inputDec(L.get('enter_default_amount')),
                 ),
                 const SizedBox(height: 16),
 
@@ -136,19 +137,20 @@ class _EditViolationPageState extends State<_EditViolationPage> with DarkModeReb
                       if (!_formKey.currentState!.validate()) return;
                       logEvent(EventItem(
                         vehicleId: widget.vehicleId,
-                        location: 'تعديل مخالفة: ${_nameCtrl.text.trim()}',
+                        location: '${L.get('edit_violation')}: ${_nameCtrl.text.trim()}',
                         time: nowTime(),
                         type: EventType.violation,
-                        violationNote: 'قيمة المخالفة = ${_amountCtrl.text.trim()} شيكل',
+                        violationNote: '${L.get('violation_value')} = ${_amountCtrl.text.trim()} ${L.get('shekel')}',
                       ));
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('تم تعديل المخالفة بنجاح', textDirection: TextDirection.rtl),
+                        content: Text(L.get('violation_updated'), 
+                            textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr),
                         backgroundColor: const Color(0xFF2D3A5C),
                       ));
                       Navigator.pop(context);
                     },
-                    child: const Text('حفظ المخالفة',
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: Text(L.get('save_violation'),
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

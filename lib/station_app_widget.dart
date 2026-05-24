@@ -17,6 +17,19 @@ class StationApp extends StatelessWidget {
               title: 'Admin Control Panel',
               debugShowCheckedModeBanner: false,
               themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+
+              // ← التعديلات المضافة
+              locale: Locale(lang),
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('ar'),
+                Locale('en'),
+              ],
+
               theme: ThemeData(
                 brightness: Brightness.light,
                 textTheme: GoogleFonts.tajawalTextTheme(),
@@ -61,7 +74,6 @@ class Responsive {
   static bool isDesktop(BuildContext context) =>
       MediaQuery.of(context).size.width >= 1024;
 
-  /// حجم الخط المتكيف
   static double fontSize(BuildContext context, double base) {
     final w = MediaQuery.of(context).size.width;
     if (w < 360) return base * 0.85;
@@ -70,7 +82,6 @@ class Responsive {
     return base * 1.2;
   }
 
-  /// padding متكيف
   static EdgeInsets padding(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     if (w < 360) return const EdgeInsets.all(10);

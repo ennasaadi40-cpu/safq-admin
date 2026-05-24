@@ -26,18 +26,16 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 44, height: 44,
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(child: Text(label, style: TextStyle(fontSize: 14, color: context.textPrimary))),
-          Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
-        ],
-      ),
+      child: Row(children: [
+        Container(
+          width: 44, height: 44,
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, color: color, size: 22),
+        ),
+        const SizedBox(width: 14),
+        Expanded(child: Text(label, style: TextStyle(fontSize: 14, color: context.textPrimary))),
+        Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+      ]),
     );
   }
 
@@ -46,10 +44,6 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
     child: Text(t, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: context.textPrimary)),
   );
 
-  // ── توليد PDF حقيقي وتنزيله
-  // ── توليد بيانات الـ PDF ──────────────────────
-
-  // ── طباعة ────────────────────────────────────
   Future<void> _printPdf(BuildContext ctx) async {
     try {
       final pdf = await _buildPdf();
@@ -60,13 +54,12 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
     } catch (e) {
       if (!ctx.mounted) return;
       ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-        content: Text('خطأ في الطباعة: $e'),
+        content: Text('${L.get('error')}: $e'),
         backgroundColor: Colors.red,
       ));
     }
   }
 
-  // ── تنزيل PDF ────────────────────────────────
   Future<void> _downloadPdf(BuildContext ctx) async {
     try {
       final pdf = await _buildPdf();
@@ -77,26 +70,23 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
     } catch (e) {
       if (!ctx.mounted) return;
       ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
-        content: Text('خطأ في التنزيل: $e'),
+        content: Text('${L.get('error')}: $e'),
         backgroundColor: Colors.red,
       ));
     }
   }
 
-    Future<pw.Document> _buildPdf() async {
+  Future<pw.Document> _buildPdf() async {
     final now = DateTime.now();
     final dateStr = '${now.year}/${now.month.toString().padLeft(2,"0")}/${now.day.toString().padLeft(2,"0")}';
 
-    // ── تحميل الخط العربي ──────────────────────────────
     pw.Font? arabicFont;
     pw.Font? arabicBoldFont;
 
-    // 1. جرب من assets
     try {
       arabicFont     = pw.Font.ttf(await rootBundle.load('assets/fonts/Tajawal-Regular.ttf'));
       arabicBoldFont = pw.Font.ttf(await rootBundle.load('assets/fonts/Tajawal-Bold.ttf'));
     } catch (_) {
-      // 2. جرب تحميل من Google Fonts عبر FontLoader
       try {
         final loader = FontLoader('Tajawal')
           ..addFont(rootBundle.load('assets/fonts/Tajawal-Regular.ttf').catchError((_) async {
@@ -106,7 +96,6 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
           }));
         await loader.load();
       } catch (_) {}
-      // 3. جرب من الشبكة مباشرة
       try {
         final r = await http.get(Uri.parse(
           'https://fonts.gstatic.com/s/cairo/v28/SLXVc1nY6HkvangtZmpcWmhzfH5lkSs2SgRjCAGMQ1z0hGA.ttf',
@@ -118,7 +107,6 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
       } catch (_) {}
     }
 
-
     final theme = arabicFont != null
         ? pw.ThemeData.withFont(
             base: arabicFont,
@@ -126,17 +114,12 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
           )
         : pw.ThemeData.base();
 
-    // ── helper لبناء TextStyle ─────────────────────────
     pw.TextStyle arStyle({
       double fontSize = 11,
       pw.FontWeight fontWeight = pw.FontWeight.normal,
       PdfColor? color,
     }) {
-      final base = pw.TextStyle(
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        color: color,
-      );
+      final base = pw.TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: color);
       return arabicFont != null
           ? base.copyWith(font: fontWeight == pw.FontWeight.bold ? (arabicBoldFont ?? arabicFont) : arabicFont)
           : base;
@@ -149,7 +132,6 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
       textDirection: pw.TextDirection.rtl,
       margin: const pw.EdgeInsets.all(32),
       build: (pw.Context c) => [
-        // ترويسة
         pw.Container(
           width: double.infinity,
           padding: const pw.EdgeInsets.all(16),
@@ -158,44 +140,42 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
             borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
           ),
           child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-            pw.Text('نظام إدارة طابور المركبات',
+            pw.Text(L.get('app_subtitle'),
                 style: arStyle(fontSize: 20, fontWeight: pw.FontWeight.bold, color: PdfColors.white)),
             pw.SizedBox(height: 4),
-            pw.Text('محطة الحافلات المركزية — الخليل',
+            pw.Text(L.get('station_name'),
                 style: arStyle(fontSize: 13, color: PdfColors.white)),
             pw.SizedBox(height: 4),
-            pw.Text('تاريخ التقرير: $dateStr',
+            pw.Text('${L.get('date')}: $dateStr',
                 style: arStyle(fontSize: 10, color: PdfColors.grey300)),
           ]),
         ),
         pw.SizedBox(height: 20),
 
-        // إحصائيات عامة
-        pw.Text('إحصائيات عامة',
+        pw.Text(L.get('event_stats'),
             style: arStyle(fontSize: 15, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 6),
         pw.Table(
           border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
           children: [
-            _pdfTRow('البيان', 'القيمة', header: true, font: arabicFont, boldFont: arabicBoldFont),
-            _pdfTRow('إجمالي المركبات',     '$_totalVehicles', font: arabicFont, boldFont: arabicBoldFont),
-            _pdfTRow('إجمالي الخطوط',       '$_totalLines', font: arabicFont, boldFont: arabicBoldFont),
-            _pdfTRow('إجمالي المستخدمين',   '$_totalUsers', font: arabicFont, boldFont: arabicBoldFont),
-            _pdfTRow('المستخدمون النشطون',  '$_activeUsers', font: arabicFont, boldFont: arabicBoldFont),
-            _pdfTRow('المخالفات',            '$_violations', font: arabicFont, boldFont: arabicBoldFont),
-            _pdfTRow('إجمالي الأحداث',      '$_totalEvents', font: arabicFont, boldFont: arabicBoldFont),
+            _pdfTRow(L.get('details'), L.get('amount'), header: true, font: arabicFont, boldFont: arabicBoldFont),
+            _pdfTRow(L.get('total_vehicles'),    '$_totalVehicles', font: arabicFont, boldFont: arabicBoldFont),
+            _pdfTRow(L.get('lines_title'),       '$_totalLines',    font: arabicFont, boldFont: arabicBoldFont),
+            _pdfTRow(L.get('users'),             '$_totalUsers',    font: arabicFont, boldFont: arabicBoldFont),
+            _pdfTRow(L.get('active'),            '$_activeUsers',   font: arabicFont, boldFont: arabicBoldFont),
+            _pdfTRow(L.get('violations'),        '$_violations',    font: arabicFont, boldFont: arabicBoldFont),
+            _pdfTRow(L.get('no_events'),         '$_totalEvents',   font: arabicFont, boldFont: arabicBoldFont),
           ],
         ),
         pw.SizedBox(height: 16),
 
-        // توزيع المستخدمين
-        pw.Text('توزيع المستخدمين',
+        pw.Text(L.get('users'),
             style: arStyle(fontSize: 15, fontWeight: pw.FontWeight.bold)),
         pw.SizedBox(height: 6),
         pw.Table(
           border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
           children: [
-            _pdfTRow('الدور', 'العدد', header: true, font: arabicFont, boldFont: arabicBoldFont),
+            _pdfTRow(L.get('role'), L.get('amount'), header: true, font: arabicFont, boldFont: arabicBoldFont),
             ...['سائق', 'مالك سيارة', 'موظف أمن', 'مشرف خط'].map((r) =>
                 _pdfTRow(r, '${globalUsers.where((u) => u.role == r).length}',
                     font: arabicFont, boldFont: arabicBoldFont)),
@@ -203,15 +183,14 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
         ),
         pw.SizedBox(height: 16),
 
-        // الخطوط والمركبات
         if (globalLines.isNotEmpty) ...[
-          pw.Text('الخطوط والمركبات',
+          pw.Text('${L.get('lines_title')} & ${L.get('vehicles')}',
               style: arStyle(fontSize: 15, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
             children: [
-              _pdfTRow('اسم الخط', 'عدد المركبات', header: true, font: arabicFont, boldFont: arabicBoldFont),
+              _pdfTRow(L.get('line_name'), L.get('vehicle_count'), header: true, font: arabicFont, boldFont: arabicBoldFont),
               ...List.generate(globalLines.length, (i) =>
                   _pdfTRow(globalLines[i].name, '${globalVehicles[i].length}',
                       font: arabicFont, boldFont: arabicBoldFont)),
@@ -220,15 +199,14 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
           pw.SizedBox(height: 16),
         ],
 
-        // المخالفات
         if (globalEvents.where((e) => e.type == EventType.violation).isNotEmpty) ...[
-          pw.Text('آخر المخالفات',
+          pw.Text(L.get('violation_report'),
               style: arStyle(fontSize: 15, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
             children: [
-              _pdfTRow('المركبة', 'تفاصيل المخالفة', header: true, font: arabicFont, boldFont: arabicBoldFont),
+              _pdfTRow(L.get('vehicle'), L.get('details'), header: true, font: arabicFont, boldFont: arabicBoldFont),
               ...globalEvents
                   .where((e) => e.type == EventType.violation)
                   .take(10)
@@ -239,18 +217,17 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
           pw.SizedBox(height: 16),
         ],
 
-        // آخر الأحداث
         if (globalEvents.isNotEmpty) ...[
-          pw.Text('آخر الأحداث',
+          pw.Text(L.get('no_events'),
               style: arStyle(fontSize: 15, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 6),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
             children: [
-              _pdfTRow('المركبة', 'النوع — الموقع', header: true, font: arabicFont, boldFont: arabicBoldFont),
+              _pdfTRow(L.get('vehicle'), '${L.get('status')} — ${L.get('details')}', header: true, font: arabicFont, boldFont: arabicBoldFont),
               ...globalEvents.take(10).map((e) {
-                final t = e.type == EventType.entry ? 'دخول'
-                        : e.type == EventType.exit  ? 'خروج' : 'مخالفة';
+                final t = e.type == EventType.entry ? L.get('entry')
+                        : e.type == EventType.exit  ? L.get('exit') : L.get('violation');
                 return _pdfTRow(e.vehicleId, '$t — ${e.location}',
                     font: arabicFont, boldFont: arabicBoldFont);
               }),
@@ -261,7 +238,7 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
         pw.SizedBox(height: 28),
         pw.Divider(color: PdfColors.grey400),
         pw.SizedBox(height: 6),
-        pw.Text('تم إنشاؤه تلقائياً — نظام إدارة محطة الخليل — $dateStr',
+        pw.Text('${L.get('app_title')} — $dateStr',
             style: arStyle(fontSize: 9, color: PdfColors.grey500)),
       ],
     ));
@@ -287,7 +264,7 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
         child: AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           title: Row(children: [
@@ -297,15 +274,12 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
                 color: const Color(0xFF2D3A5C).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.picture_as_pdf_rounded,
-                  color: Color(0xFF2D3A5C), size: 22),
+              child: const Icon(Icons.picture_as_pdf_rounded, color: Color(0xFF2D3A5C), size: 22),
             ),
             const SizedBox(width: 10),
-            const Text('تصدير التقرير',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(L.get('export'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ]),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
-            // ملخص الإحصائيات
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -313,17 +287,15 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(children: [
-                _pdfRow('إجمالي المركبات',    '$_totalVehicles'),
-                _pdfRow('إجمالي الخطوط',      '$_totalLines'),
-                _pdfRow('المستخدمون النشطون', '$_activeUsers / $_totalUsers'),
-                _pdfRow('المخالفات',           '$_violations'),
-                _pdfRow('إجمالي الأحداث',     '$_totalEvents'),
+                _pdfRow(L.get('total_vehicles'),    '$_totalVehicles'),
+                _pdfRow(L.get('lines_title'),       '$_totalLines'),
+                _pdfRow(L.get('active'),            '$_activeUsers / $_totalUsers'),
+                _pdfRow(L.get('violations'),        '$_violations'),
+                _pdfRow(L.get('event_stats'),       '$_totalEvents'),
               ]),
             ),
             const SizedBox(height: 16),
-            // زرا الطباعة والتنزيل
             Row(children: [
-              // طباعة
               Expanded(child: _Tap(
                 onTap: () {
                   Navigator.pop(context);
@@ -334,23 +306,16 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
                   decoration: BoxDecoration(
                     color: const Color(0xFF2D3A5C).withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: const Color(0xFF2D3A5C).withValues(alpha: 0.3)),
+                    border: Border.all(color: const Color(0xFF2D3A5C).withValues(alpha: 0.3)),
                   ),
                   child: Column(children: [
-                    const Icon(Icons.print_rounded,
-                        color: Color(0xFF2D3A5C), size: 24),
+                    const Icon(Icons.print_rounded, color: Color(0xFF2D3A5C), size: 24),
                     const SizedBox(height: 5),
-                    Text('طباعة',
-                        style: TextStyle(
-                          color: context.textPrimary,
-                          fontWeight: FontWeight.bold, fontSize: 13,
-                        )),
+                    Text(L.get('print'), style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
                   ]),
                 ),
               )),
               const SizedBox(width: 10),
-              // تنزيل PDF
               Expanded(child: _Tap(
                 onTap: () {
                   Navigator.pop(context);
@@ -361,18 +326,12 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
                   decoration: BoxDecoration(
                     color: const Color(0xFFC62828).withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: const Color(0xFFC62828).withValues(alpha: 0.3)),
+                    border: Border.all(color: const Color(0xFFC62828).withValues(alpha: 0.3)),
                   ),
-                  child: const Column(children: [
-                    Icon(Icons.download_rounded,
-                        color: Color(0xFFC62828), size: 24),
-                    SizedBox(height: 5),
-                    Text('تنزيل PDF',
-                        style: TextStyle(
-                          color: Color(0xFFC62828),
-                          fontWeight: FontWeight.bold, fontSize: 13,
-                        )),
+                  child: Column(children: [
+                    const Icon(Icons.download_rounded, color: Color(0xFFC62828), size: 24),
+                    const SizedBox(height: 5),
+                    Text(L.get('export'), style: const TextStyle(color: Color(0xFFC62828), fontWeight: FontWeight.bold, fontSize: 13)),
                   ]),
                 ),
               )),
@@ -381,14 +340,14 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('إغلاق',
-                  style: TextStyle(color: context.textSecondary)),
+              child: Text(L.get('close'), style: TextStyle(color: context.textSecondary)),
             ),
           ],
         ),
       ),
     );
   }
+
   Widget _pdfRow(String label, String value) => Padding(
     padding: const EdgeInsets.only(bottom: 6),
     child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
@@ -400,162 +359,122 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Column(
-        children: [
-          // Header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            color: const Color(0xFF2D3A5C),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('التقارير والإحصائيات',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-                Row(children: [
-                  // زر التنزيل
-                  _Tap(
-                    onTap: () => _downloadPdf(context),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFC62828).withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(children: [
-                        Icon(Icons.download_rounded, color: Colors.white, size: 16),
-                        SizedBox(width: 5),
-                        Text('PDF', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                      ]),
-                    ),
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: Column(children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          color: const Color(0xFF2D3A5C),
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(L.get('reports'),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+            Row(children: [
+              _Tap(
+                onTap: () => _downloadPdf(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC62828).withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ]),
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  // ── فلتر التاريخ ──────────────────────────
-                  _DateFilterBar(
-                    dateFrom: _dateFrom,
-                    dateTo: _dateTo,
-                    onChanged: (f, t) => setState(() { _dateFrom = f; _dateTo = t; }),
-                  ),
-                  const SizedBox(height: 8),
-                  // ── التقرير اليومي ──────────────────────────
-                  _sectionTitle('🚌 التقرير اليومي — السيارات اللي طلعت'),
-                  _DailyMovementReport(dateFrom: _dateFrom, dateTo: _dateTo),
-                  const SizedBox(height: 8),
-
-                  // ── أوامر الاستثناء ──────────────────────────
-                  _sectionTitle('⚡ أوامر الاستثناء'),
-                  _ExceptionOrdersSection(),
-                  const SizedBox(height: 8),
-
-                                    _sectionTitle('📊 إحصائيات عامة'),
-                  _statRow('إجمالي المركبات',     '$_totalVehicles', Icons.directions_car_outlined,  const Color(0xFF1565C0)),
-                  _statRow('إجمالي الخطوط',       '$_totalLines',    Icons.route_outlined,            const Color(0xFF2E7D32)),
-                  _statRow('إجمالي المستخدمين',   '$_totalUsers',    Icons.people_outline,            const Color(0xFF6A1B9A)),
-                  _statRow('المستخدمون النشطون',  '$_activeUsers',   Icons.person_outline,            const Color(0xFF00838F)),
-                  _statRow('المخالفات',            '$_violations',    Icons.warning_amber_outlined,    const Color(0xFFC62828)),
-                  _statRow('إجمالي الأحداث',      '$_totalEvents',   Icons.history_outlined,          const Color(0xFFE65100)),
-
-                  const SizedBox(height: 8),
-                  _sectionTitle('📋 آخر الأحداث'),
-                  if (globalEvents.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: context.cardColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(child: Text('لا توجد أحداث',
-                          style: TextStyle(color: context.textSecondary))),
-                    )
-                  else
-                    ...globalEvents.take(5).map((e) => Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: context.cardColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 8, height: 8,
-                            decoration: BoxDecoration(
-                              color: e.type == EventType.violation ? Colors.red
-                                  : e.type == EventType.entry ? Colors.green : Colors.orange,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(child: Text(e.vehicleId,
-                              style: TextStyle(fontSize: 13, color: context.textPrimary))),
-                          Text(e.time, style: TextStyle(fontSize: 12, color: context.textSecondary)),
-                        ],
-                      ),
-                    )),
-
-                  const SizedBox(height: 8),
-                  _sectionTitle('👥 توزيع المستخدمين'),
-                  ...['سائق', 'مالك سيارة', 'موظف أمن', 'مشرف خط'].map((role) {
-                    final count = globalUsers.where((u) => u.role == role).length;
-                    final total = globalUsers.isEmpty ? 1 : globalUsers.length;
-                    final pct = (count / total * 100).round();
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: context.cardColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(role, style: TextStyle(fontSize: 13, color: context.textPrimary)),
-                              Text('$count ($pct%)', style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF2D3A5C))),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: count / total,
-                              backgroundColor: context.dividerColor,
-                              valueColor: const AlwaysStoppedAnimation(Color(0xFF2D3A5C)),
-                              minHeight: 6,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
+                  child: Row(children: [
+                    const Icon(Icons.download_rounded, color: Colors.white, size: 16),
+                    const SizedBox(width: 5),
+                    Text(L.get('export'), style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                  ]),
+                ),
               ),
-            ),
+            ]),
+          ]),
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _DateFilterBar(
+                dateFrom: _dateFrom,
+                dateTo: _dateTo,
+                onChanged: (f, t) => setState(() { _dateFrom = f; _dateTo = t; }),
+              ),
+              const SizedBox(height: 8),
+              _sectionTitle('🚌 ${L.get('daily_report')}'),
+              _DailyMovementReport(dateFrom: _dateFrom, dateTo: _dateTo),
+              const SizedBox(height: 8),
+              _sectionTitle('⚡ ${L.get('requests')}'),
+              const _ExceptionOrdersSection(),
+              const SizedBox(height: 8),
+              _sectionTitle('📊 ${L.get('event_stats')}'),
+              _statRow(L.get('total_vehicles'),  '$_totalVehicles', Icons.directions_car_outlined,  const Color(0xFF1565C0)),
+              _statRow(L.get('lines_title'),     '$_totalLines',    Icons.route_outlined,            const Color(0xFF2E7D32)),
+              _statRow(L.get('users'),           '$_totalUsers',    Icons.people_outline,            const Color(0xFF6A1B9A)),
+              _statRow(L.get('active'),          '$_activeUsers',   Icons.person_outline,            const Color(0xFF00838F)),
+              _statRow(L.get('violations'),      '$_violations',    Icons.warning_amber_outlined,    const Color(0xFFC62828)),
+              _statRow(L.get('event_stats'),     '$_totalEvents',   Icons.history_outlined,          const Color(0xFFE65100)),
+              const SizedBox(height: 8),
+              _sectionTitle('📋 ${L.get('no_events')}'),
+              if (globalEvents.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(color: context.cardColor, borderRadius: BorderRadius.circular(12)),
+                  child: Center(child: Text(L.get('no_events'), style: TextStyle(color: context.textSecondary))),
+                )
+              else
+                ...globalEvents.take(5).map((e) => Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(color: context.cardColor, borderRadius: BorderRadius.circular(10)),
+                  child: Row(children: [
+                    Container(
+                      width: 8, height: 8,
+                      decoration: BoxDecoration(
+                        color: e.type == EventType.violation ? Colors.red
+                            : e.type == EventType.entry ? Colors.green : Colors.orange,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(child: Text(e.vehicleId, style: TextStyle(fontSize: 13, color: context.textPrimary))),
+                    Text(e.time, style: TextStyle(fontSize: 12, color: context.textSecondary)),
+                  ]),
+                )),
+              const SizedBox(height: 8),
+              _sectionTitle('👥 ${L.get('users')}'),
+              ...['سائق', 'مالك سيارة', 'موظف أمن', 'مشرف خط'].map((role) {
+                final count = globalUsers.where((u) => u.role == role).length;
+                final total = globalUsers.isEmpty ? 1 : globalUsers.length;
+                final pct = (count / total * 100).round();
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(color: context.cardColor, borderRadius: BorderRadius.circular(12)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text(role, style: TextStyle(fontSize: 13, color: context.textPrimary)),
+                      Text('$count ($pct%)', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3A5C))),
+                    ]),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: count / total,
+                        backgroundColor: context.dividerColor,
+                        valueColor: const AlwaysStoppedAnimation(Color(0xFF2D3A5C)),
+                        minHeight: 6,
+                      ),
+                    ),
+                  ]),
+                );
+              }),
+            ]),
           ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 }
 
-
 // ─────────────────────────────────────────────
-//  التقرير اليومي — السيارات اللي طلعت
+//  _DailyMovementReport
 // ─────────────────────────────────────────────
 class _DailyMovementReport extends StatefulWidget {
   final String? dateFrom;
@@ -583,7 +502,7 @@ class _DailyMovementReportState extends State<_DailyMovementReport> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: context.cardColor, borderRadius: BorderRadius.circular(12)),
-        child: Center(child: Text('لا توجد حركات في هذه الفترة', style: TextStyle(color: context.textSecondary))),
+        child: Center(child: Text(L.get('no_events'), style: TextStyle(color: context.textSecondary))),
       );
     }
 
@@ -591,7 +510,7 @@ class _DailyMovementReportState extends State<_DailyMovementReport> {
       final isException = globalRequests.any((r) =>
           r.assignedVehicleId == e.vehicleId && r.status == RequestStatus.accepted);
       final color = isException ? const Color(0xFFFFB347) : const Color(0xFF00C897);
-      final label = isException ? 'استثناء' : 'تلقائي';
+      final label = isException ? L.get('requests') : L.get('success');
       final icon  = isException ? Icons.star_outline_rounded : Icons.check_circle_outline;
 
       return Container(
@@ -617,10 +536,7 @@ class _DailyMovementReportState extends State<_DailyMovementReport> {
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
                 Icon(icon, size: 11, color: color),
                 const SizedBox(width: 4),
@@ -637,7 +553,7 @@ class _DailyMovementReportState extends State<_DailyMovementReport> {
 }
 
 // ─────────────────────────────────────────────
-//  أوامر الاستثناء
+//  _ExceptionOrdersSection
 // ─────────────────────────────────────────────
 class _ExceptionOrdersSection extends StatelessWidget {
   const _ExceptionOrdersSection();
@@ -652,12 +568,12 @@ class _ExceptionOrdersSection extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: context.cardColor, borderRadius: BorderRadius.circular(12)),
-        child: Center(child: Text('لا توجد أوامر استثناء', style: TextStyle(color: context.textSecondary))),
+        child: Center(child: Text(L.get('no_data'), style: TextStyle(color: context.textSecondary))),
       );
     }
 
     return Column(children: exceptions.map((r) {
-      final typeLabel = r.type == RequestType.parcel ? 'طرد' : 'ركاب';
+      final typeLabel = r.type == RequestType.parcel ? L.get('note') : L.get('users');
       final typeColor = r.type == RequestType.parcel ? const Color(0xFFB47AFF) : const Color(0xFF4B9EFF);
 
       return Container(
@@ -680,13 +596,12 @@ class _ExceptionOrdersSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: const Color(0xFFFFB347).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-              child: const Text('استثناء', style: TextStyle(fontSize: 11, color: Color(0xFFFFB347), fontWeight: FontWeight.bold)),
+              child: Text(L.get('requests'), style: const TextStyle(fontSize: 11, color: Color(0xFFFFB347), fontWeight: FontWeight.bold)),
             ),
             const Spacer(),
             Text(r.id, style: TextStyle(fontSize: 11, color: context.textSecondary)),
           ]),
           const SizedBox(height: 10),
-          // معلومات السيارة
           Row(children: [
             const Icon(Icons.directions_car_outlined, size: 14, color: Color(0xFF2D3A5C)),
             const SizedBox(width: 6),
@@ -697,7 +612,6 @@ class _ExceptionOrdersSection extends StatelessWidget {
             ],
           ]),
           const SizedBox(height: 6),
-          // الموقع والوجهة
           Row(children: [
             const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFF00C897)),
             const SizedBox(width: 4),
@@ -708,7 +622,6 @@ class _ExceptionOrdersSection extends StatelessWidget {
             Text(r.destination, style: TextStyle(fontSize: 12, color: context.textSecondary)),
           ]),
           const SizedBox(height: 6),
-          // هاتف الراكب/المستلم
           Row(children: [
             const Icon(Icons.phone_outlined, size: 13, color: Color(0xFF4B9EFF)),
             const SizedBox(width: 4),
@@ -728,9 +641,8 @@ class _ExceptionOrdersSection extends StatelessWidget {
   }
 }
 
-
 // ─────────────────────────────────────────────
-//  فلتر التاريخ
+//  _DateFilterBar
 // ─────────────────────────────────────────────
 class _DateFilterBar extends StatelessWidget {
   final String? dateFrom;
@@ -744,7 +656,7 @@ class _DateFilterBar extends StatelessWidget {
   }
 
   static String _fmt(String? date) {
-    if (date == null) return 'اختر';
+    if (date == null) return '—';
     try { final p = date.split('-'); return '${p[2]}/${p[1]}/${p[0]}'; } catch (_) { return date; }
   }
 
@@ -755,12 +667,12 @@ class _DateFilterBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(color: context.cardColor, borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)]),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6)]),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.date_range_outlined, size: 16, color: Color(0xFF2D3A5C)),
           const SizedBox(width: 6),
-          Text('الفترة الزمنية', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.textPrimary)),
+          Text(L.get('date'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.textPrimary)),
           const Spacer(),
           if (!isToday)
             _Tap(
@@ -768,19 +680,19 @@ class _DateFilterBar extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: const Color(0xFFFF5A5F).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                child: const Text('اليوم', style: TextStyle(fontSize: 11, color: Color(0xFFFF5A5F), fontWeight: FontWeight.bold)),
+                child: Text(L.get('daily_report'), style: const TextStyle(fontSize: 11, color: Color(0xFFFF5A5F), fontWeight: FontWeight.bold)),
               ),
             ),
         ]),
         const SizedBox(height: 10),
         Row(children: [
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('من', style: TextStyle(fontSize: 11, color: context.textSecondary)),
+            Text(L.get('from'), style: TextStyle(fontSize: 11, color: context.textSecondary)),
             const SizedBox(height: 4),
             _Tap(
               onTap: () async {
                 final picked = await showDatePicker(context: context,
-                  initialDate: DateTime.now(), firstDate: DateTime(2024), lastDate: DateTime.now());
+                    initialDate: DateTime.now(), firstDate: DateTime(2024), lastDate: DateTime.now());
                 if (picked != null) {
                   final str = '${picked.year}-${picked.month.toString().padLeft(2,"0")}-${picked.day.toString().padLeft(2,"0")}';
                   onChanged(str, dateTo ?? str);
@@ -806,12 +718,12 @@ class _DateFilterBar extends StatelessWidget {
             child: Icon(Icons.arrow_back_rounded, size: 16, color: context.textSecondary),
           ),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('إلى', style: TextStyle(fontSize: 11, color: context.textSecondary)),
+            Text(L.get('to'), style: TextStyle(fontSize: 11, color: context.textSecondary)),
             const SizedBox(height: 4),
             _Tap(
               onTap: () async {
                 final picked = await showDatePicker(context: context,
-                  initialDate: DateTime.now(), firstDate: DateTime(2024), lastDate: DateTime.now());
+                    initialDate: DateTime.now(), firstDate: DateTime(2024), lastDate: DateTime.now());
                 if (picked != null) {
                   final str = '${picked.year}-${picked.month.toString().padLeft(2,"0")}-${picked.day.toString().padLeft(2,"0")}';
                   onChanged(dateFrom ?? td, str);
@@ -837,6 +749,3 @@ class _DateFilterBar extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────
-//  Main screen

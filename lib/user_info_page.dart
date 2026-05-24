@@ -13,70 +13,52 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
     final u = widget.user;
     final result = <Map<String, String>>[];
 
-    // ابحث عن سيارات المستخدم
     final userVehicleIds = <String>{};
-    for (final list in globalVehicles) {
-      for (final v in list) {
+    for (final list in globalVehicles)
+      for (final v in list)
         if (v.ownerName == u.name) userVehicleIds.add(v.vehicleId);
-      }
-    }
 
-    // حوّل globalEvents إلى history entries
     for (final e in globalEvents) {
-      final isUserEvent = e.vehicleId.contains(u.name);
+      final isUserEvent    = e.vehicleId.contains(u.name);
       final isVehicleEvent = userVehicleIds.contains(e.vehicleId);
-
       if (!isUserEvent && !isVehicleEvent) continue;
 
-      String type;
-      String eventText;
+      String type, eventText;
 
       if (isUserEvent) {
-        // حدث متعلق بالمستخدم مباشرة
         switch (e.type) {
           case EventType.entry:
-            type = 'create';
-            eventText = e.location;
-            break;
+            type = 'create'; eventText = e.location; break;
           case EventType.exit:
-            type = 'contract';
-            eventText = e.location;
-            break;
+            type = 'contract'; eventText = e.location; break;
           case EventType.violation:
-            type = 'warning';
-            eventText = e.violationNote ?? e.location;
-            break;
+            type = 'warning'; eventText = e.violationNote ?? e.location; break;
         }
       } else {
-        // حدث متعلق بسيارة المستخدم
         switch (e.type) {
           case EventType.entry:
             type = 'vehicle';
-            eventText = 'دخول مركبة ${e.vehicleId} — ${e.location}';
+            eventText = '${L.isArabic ? "دخول مركبة" : "Vehicle entry"} ${e.vehicleId} — ${e.location}';
             break;
           case EventType.exit:
             type = 'remove';
-            eventText = 'خروج مركبة ${e.vehicleId} — ${e.location}';
+            eventText = '${L.isArabic ? "خروج مركبة" : "Vehicle exit"} ${e.vehicleId} — ${e.location}';
             break;
           case EventType.violation:
             type = 'warning';
-            eventText = 'شكوى للمركبة ${e.vehicleId}: ${e.violationNote ?? e.location}';
+            eventText = '${L.isArabic ? "شكوى للمركبة" : "Complaint for vehicle"} ${e.vehicleId}: ${e.violationNote ?? e.location}';
             break;
         }
       }
 
-      result.add({
-        'type': type,
-        'event': eventText,
-        'date': e.time,
-      });
+      result.add({'type': type, 'event': eventText, 'date': e.time});
     }
 
     if (result.isEmpty) {
       result.add({
         'type': 'create',
-        'event': 'تم تسجيل المستخدم "${u.name}" في النظام',
-        'date': 'غير محدد',
+        'event': '${L.isArabic ? 'تم تسجيل المستخدم' : 'User registered'} "${u.name}"',
+        'date': L.get('unknown'),
       });
     }
 
@@ -103,24 +85,37 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
     }
   }
 
+  String _roleLabel(String role) {
+    switch (role) {
+      case 'سائق':        return L.get('driver');
+      case 'موظف أمن':   return L.get('security');
+      case 'مشرف خط':    return L.get('supervisor');
+      default:             return role;
+    }
+  }
+
+  String _statusLabel(String status) {
+    if (status.isEmpty) return '';
+    switch (status) {
+      case 'نشط':    return L.get('active');
+      case 'معلق':   return L.get('suspended');
+      default:        return status;
+    }
+  }
+
   Future<void> _printUser(UserModel u) async {
     try {
       final pdf = pw.Document();
       pw.Font? arabicFont;
-      // حاول تحميل الخط من الإنترنت
       try {
         final res = await http.get(Uri.parse(
           'https://fonts.gstatic.com/s/tajawal/v9/Iurf6YBj_oCad4k1nzSBC45I.ttf',
         )).timeout(const Duration(seconds: 10));
-        if (res.statusCode == 200 && res.bodyBytes.isNotEmpty) {
+        if (res.statusCode == 200 && res.bodyBytes.isNotEmpty)
           arabicFont = pw.Font.ttf(res.bodyBytes.buffer.asByteData());
-        }
       } catch (_) {}
-      // fallback: حاول من assets
       if (arabicFont == null) {
-        try {
-          arabicFont = pw.Font.ttf(await rootBundle.load('assets/fonts/Tajawal-Regular.ttf'));
-        } catch (_) {}
+        try { arabicFont = pw.Font.ttf(await rootBundle.load('assets/fonts/Tajawal-Regular.ttf')); } catch (_) {}
       }
 
       final theme = arabicFont != null
@@ -134,21 +129,15 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
       }
 
       pw.TableRow tRow(String label, String value) => pw.TableRow(children: [
-        // عمود القيمة (يسار)
         pw.Padding(
           padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          child: pw.Text(value,
-            textDirection: pw.TextDirection.rtl,
-            textAlign: pw.TextAlign.right,
-            style: ar(w: pw.FontWeight.bold)),
+          child: pw.Text(value, textDirection: pw.TextDirection.rtl,
+              textAlign: pw.TextAlign.right, style: ar(w: pw.FontWeight.bold)),
         ),
-        // عمود التسمية (يمين)
         pw.Padding(
           padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          child: pw.Text(label,
-            textDirection: pw.TextDirection.rtl,
-            textAlign: pw.TextAlign.right,
-            style: ar(color: PdfColors.grey700)),
+          child: pw.Text(label, textDirection: pw.TextDirection.rtl,
+              textAlign: pw.TextAlign.right, style: ar(color: PdfColors.grey700)),
         ),
       ]);
 
@@ -157,7 +146,6 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
         textDirection: pw.TextDirection.rtl,
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context ctx) => pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-          // Header
           pw.Container(
             width: double.infinity,
             padding: const pw.EdgeInsets.all(16),
@@ -166,87 +154,89 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
               borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
             ),
             child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-              pw.Text('بطاقة معلومات المستخدم', style: ar(size: 18, w: pw.FontWeight.bold, color: PdfColors.white)),
+              pw.Text(L.isArabic ? 'بطاقة معلومات المستخدم' : 'User Information Card',
+                  style: ar(size: 18, w: pw.FontWeight.bold, color: PdfColors.white)),
               pw.SizedBox(height: 4),
-              pw.Text('محطة الحافلات المركزية — الخليل', style: ar(size: 12, color: PdfColors.grey300)),
+              pw.Text(L.get('station_name'), style: ar(size: 12, color: PdfColors.grey300)),
             ]),
           ),
           pw.SizedBox(height: 20),
-
-          // المعلومات الأساسية
-          pw.Text('المعلومات الأساسية', style: ar(size: 14, w: pw.FontWeight.bold)),
+          pw.Text(L.isArabic ? 'المعلومات الأساسية' : 'Basic Information',
+              style: ar(size: 14, w: pw.FontWeight.bold)),
           pw.SizedBox(height: 8),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
             columnWidths: {0: const pw.FlexColumnWidth(2), 1: const pw.FlexColumnWidth(1)},
             children: [
-            tRow('الاسم الكامل',  u.name),
-            tRow('الدور',         u.role),
-            tRow('رقم الهوية',    u.idNumber.isEmpty ? '—' : u.idNumber),
-            tRow('رقم الهاتف',    u.phone.isEmpty    ? '—' : u.phone),
-            if (u.phone2.isNotEmpty) tRow('رقم الهاتف 2', u.phone2),
-            tRow('الحالة',        u.isActive ? 'نشط' : 'معلق'),
-            if (u.macAddress.isNotEmpty) tRow('MAC Address', u.macAddress),
-          ]),
+              tRow(L.get('full_name'),  u.name),
+              tRow(L.get('role'),       _roleLabel(u.role)),
+              tRow(L.get('id_number'),  u.idNumber.isEmpty ? '—' : u.idNumber),
+              tRow(L.get('phone'),      u.phone.isEmpty    ? '—' : u.phone),
+              if (u.phone2.isNotEmpty) tRow(L.get('phone_optional'), u.phone2),
+              tRow(L.get('status'),     u.isActive ? L.get('active') : L.get('suspended')),
+              if (u.macAddress.isNotEmpty) tRow(L.get('mac_address'), u.macAddress),
+            ],
+          ),
           pw.SizedBox(height: 16),
 
-          // بيانات الرخصة (سائق فقط)
           if (u.role == 'سائق') ...[
-            pw.Text('رخصة القيادة', style: ar(size: 14, w: pw.FontWeight.bold)),
+            pw.Text(L.get('license_num'), style: ar(size: 14, w: pw.FontWeight.bold)),
             pw.SizedBox(height: 8),
             pw.Table(
               border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
               columnWidths: {0: const pw.FlexColumnWidth(2), 1: const pw.FlexColumnWidth(1)},
               children: [
-              tRow('رقم الرخصة',     u.licenseNum.isEmpty       ? '—' : u.licenseNum),
-              tRow('تاريخ الإصدار',  u.licenseIssueDate.isEmpty ? '—' : u.licenseIssueDate),
-              tRow('تاريخ الانتهاء', u.licenseExpiry.isEmpty    ? '—' : u.licenseExpiry),
-              tRow('الدرجة',         u.licenseGrade.isEmpty     ? '—' : u.licenseGrade),
-            ]),
+                tRow(L.get('license_num'),    u.licenseNum.isEmpty       ? '—' : u.licenseNum),
+                tRow(L.get('license_issue'),  u.licenseIssueDate.isEmpty ? '—' : u.licenseIssueDate),
+                tRow(L.get('license_expiry'), u.licenseExpiry.isEmpty    ? '—' : u.licenseExpiry),
+                tRow(L.get('license_grade'),  u.licenseGrade.isEmpty     ? '—' : u.licenseGrade),
+              ],
+            ),
             pw.SizedBox(height: 16),
           ],
 
-          // خطوط مشرف الخط
           if (u.role == 'مشرف خط') ...[
-            pw.Text('الخطوط المسؤول عنها', style: ar(size: 14, w: pw.FontWeight.bold)),
+            pw.Text(L.isArabic ? 'الخطوط المسؤول عنها' : 'Supervised Lines',
+                style: ar(size: 14, w: pw.FontWeight.bold)),
             pw.SizedBox(height: 8),
             pw.Table(
               border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
               columnWidths: {0: const pw.FlexColumnWidth(2), 1: const pw.FlexColumnWidth(1)},
-              children: [
-              ...() {
+              children: () {
                 final rows = <pw.TableRow>[];
                 for (int i = 0; i < globalLines.length; i++) {
                   if (globalLines[i].supervisor == u.name) {
                     final nm = RegExp(r'\[(\d+)\]\s*(.*)').firstMatch(globalLines[i].name);
-                    rows.add(tRow('رقم الخط', nm?.group(1) ?? '${i+1}'));
-                    rows.add(tRow('اسم الخط', nm?.group(2) ?? globalLines[i].name));
+                    rows.add(tRow(L.get('line_number'), nm?.group(1) ?? '${i+1}'));
+                    rows.add(tRow(L.get('line_name'),   nm?.group(2) ?? globalLines[i].name));
                   }
                 }
-                if (rows.isEmpty) rows.add(tRow('لا توجد خطوط مسندة', ''));
+                if (rows.isEmpty) rows.add(tRow(L.isArabic ? 'لا توجد خطوط مسندة' : 'No assigned lines', ''));
                 return rows;
               }(),
-            ]),
+            ),
             pw.SizedBox(height: 16),
           ],
 
           pw.Spacer(),
           pw.Divider(color: PdfColors.grey400),
           pw.SizedBox(height: 4),
-          pw.Text('تم الإنشاء تلقائياً — نظام إدارة محطة الخليل',
+          pw.Text(L.isArabic
+              ? 'تم الإنشاء تلقائياً — نظام إدارة محطة الخليل'
+              : 'Auto-generated — Hebron Station Management System',
               style: ar(size: 9, color: PdfColors.grey500)),
         ]),
       ));
 
       final bytes = await pdf.save();
-      final dir = await getApplicationDocumentsDirectory();
-      final file = File('${dir.path}/user_${u.name}.pdf');
+      final dir   = await getApplicationDocumentsDirectory();
+      final file  = File('${dir.path}/user_${u.name}.pdf');
       await file.writeAsBytes(bytes);
       await OpenFile.open(file.path);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('خطأ في الطباعة: $e'),
+        content: Text('${L.isArabic ? "خطأ في الطباعة" : "Print error"}: $e'),
         backgroundColor: Colors.red,
       ));
     }
@@ -260,117 +250,132 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
 
     showDialog(
       context: context,
-      builder: (_) => StatefulBuilder(builder: (ctx, setDlg) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Row(children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: const Color(0xFF2D3A5C).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.lock_reset_outlined, color: Color(0xFF2D3A5C), size: 20),
-            ),
-            const SizedBox(width: 10),
-            Expanded(child: Text('تغيير كلمة سر ${u.name}',
-                style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold, fontSize: 15))),
-          ]),
-          content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start, children: [
-            if (u.password.isNotEmpty) ...[
-              Text('كلمة السر الحالية', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold,
-                  color: context.textSecondary)),
-              const SizedBox(height: 6),
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setDlg) => Directionality(
+          textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(color: context.bgColor, borderRadius: BorderRadius.circular(10)),
-                child: Row(children: [
-                  Icon(Icons.lock_outline, size: 15, color: context.textSecondary),
-                  const SizedBox(width: 8),
-                  Text(u.password, style: TextStyle(color: context.textSecondary, fontFamily: 'monospace')),
-                ]),
-              ),
-              const SizedBox(height: 16),
-            ],
-            Text('كلمة السر الجديدة', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold,
-                color: context.textSecondary)),
-            const SizedBox(height: 6),
-            StatefulBuilder(builder: (_, sf) => TextField(
-                  controller: newPassCtrl, obscureText: !showNew,
-              decoration: InputDecoration(
-                hintText: 'أدخل كلمة السر الجديدة',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                suffixIcon: IconButton(
-                  icon: Icon(showNew ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
-                  onPressed: () { sf(() => showNew = !showNew); },
-                ),
-              ),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                    color: const Color(0xFF2D3A5C).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.lock_reset_outlined, color: Color(0xFF2D3A5C), size: 20)),
+              const SizedBox(width: 10),
+              Expanded(child: Text(
+                '${L.get('change_password')} — ${u.name}',
+                style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold, fontSize: 15))),
+            ]),
+            content: SingleChildScrollView(child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (u.password.isNotEmpty) ...[
+                  Text(L.isArabic ? 'كلمة السر الحالية' : 'Current Password',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.textSecondary)),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(color: context.bgColor, borderRadius: BorderRadius.circular(10)),
+                    child: Row(children: [
+                      Icon(Icons.lock_outline, size: 15, color: context.textSecondary),
+                      const SizedBox(width: 8),
+                      Text(u.password, style: TextStyle(color: context.textSecondary, fontFamily: 'monospace')),
+                    ]),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                Text(L.get('new_password'),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.textSecondary)),
+                const SizedBox(height: 6),
+                StatefulBuilder(builder: (_, sf) => TextField(
+                  controller: newPassCtrl,
+                  obscureText: !showNew,
+                  decoration: InputDecoration(
+                    hintText: L.get('enter_password'),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    suffixIcon: IconButton(
+                      icon: Icon(showNew ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+                      onPressed: () => sf(() => showNew = !showNew)),
+                  ),
+                )),
+                const SizedBox(height: 12),
+                Text(L.get('confirm_password'),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.textSecondary)),
+                const SizedBox(height: 6),
+                StatefulBuilder(builder: (_, sf) => TextField(
+                  controller: confirmCtrl,
+                  obscureText: !showConfirm,
+                  decoration: InputDecoration(
+                    hintText: L.isArabic ? 'أعد إدخال كلمة السر' : 'Re-enter password',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    suffixIcon: IconButton(
+                      icon: Icon(showConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
+                      onPressed: () => sf(() => showConfirm = !showConfirm)),
+                  ),
+                )),
+                if (errorMsg != null) ...[
+                  const SizedBox(height: 8),
+                  Text(errorMsg!, style: const TextStyle(color: Color(0xFFFF5A5F), fontSize: 12)),
+                ],
+              ],
             )),
-            const SizedBox(height: 12),
-            Text('تأكيد كلمة السر', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold,
-                color: context.textSecondary)),
-            const SizedBox(height: 6),
-            StatefulBuilder(builder: (_, sf) => TextField(
-                  controller: confirmCtrl, obscureText: !showConfirm,
-              decoration: InputDecoration(
-                hintText: 'أعد إدخال كلمة السر',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                suffixIcon: IconButton(
-                  icon: Icon(showConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18),
-                  onPressed: () { sf(() => showConfirm = !showConfirm); },
-                ),
-              ),
-            )),
-            if (errorMsg != null) ...[
-              const SizedBox(height: 8),
-              Text(errorMsg!, style: const TextStyle(color: Color(0xFFFF5A5F), fontSize: 12)),
-            ],
-          ])),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context),
-                child: Text('إلغاء', style: TextStyle(color: context.textSecondary))),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2D3A5C),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-              onPressed: () {
-                if (newPassCtrl.text.isEmpty) { setDlg(() => errorMsg = 'أدخل كلمة السر'); return; }
-                if (newPassCtrl.text != confirmCtrl.text) { setDlg(() => errorMsg = 'كلمتا السر غير متطابقتين'); return; }
-                final idx = globalUsers.indexWhere((u2) => u2.name == u.name);
-                if (idx != -1) {
-                  final updated = UserModel(name: u.name, role: u.role, status: u.status,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(L.get('cancel'), style: TextStyle(color: context.textSecondary))),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2D3A5C),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                onPressed: () {
+                  if (newPassCtrl.text.isEmpty) {
+                    setDlg(() => errorMsg = L.get('val_pass_required')); return;
+                  }
+                  if (newPassCtrl.text != confirmCtrl.text) {
+                    setDlg(() => errorMsg = L.get('passwords_not_match')); return;
+                  }
+                  final idx = globalUsers.indexWhere((u2) => u2.name == u.name);
+                  if (idx != -1) {
+                    final updated = UserModel(
+                      name: u.name, role: u.role, status: u.status,
                       phone: u.phone, idNumber: u.idNumber, licenseNum: u.licenseNum,
                       licenseExpiry: u.licenseExpiry, isActive: u.isActive,
                       licenseIssueDate: u.licenseIssueDate, licenseGrade: u.licenseGrade,
                       password: newPassCtrl.text);
-                  globalUsers[idx] = updated;
-                  autoSave();
-                }
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: const Row(children: [
-                    Icon(Icons.check_circle, color: Colors.white, size: 18),
-                    SizedBox(width: 8), Text('تم تغيير كلمة السر ✅'),
-                  ]),
-                  backgroundColor: const Color(0xFF2E7D32),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  margin: const EdgeInsets.all(16),
-                ));
-              },
-              child: const Text('حفظ', style: TextStyle(color: Colors.white)),
-            ),
-          ],
+                    globalUsers[idx] = updated;
+                    autoSave();
+                  }
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Row(children: [
+                      const Icon(Icons.check_circle, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Text(L.get('password_changed')),
+                    ]),
+                    backgroundColor: const Color(0xFF2E7D32),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    margin: const EdgeInsets.all(16),
+                  ));
+                },
+                child: Text(L.get('save'), style: const TextStyle(color: Colors.white))),
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final u = widget.user;
+    final notRegistered = L.isArabic ? 'غير مسجل' : 'Not registered';
+    final notDefined    = L.isArabic ? 'غير محددة'  : 'Not defined';
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         body: CustomScrollView(slivers: [
@@ -382,30 +387,24 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
             backgroundColor: const Color(0xFF1A2540),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
+              onPressed: () => Navigator.pop(context)),
             actions: [
               IconButton(
                 icon: const Icon(Icons.print_rounded, color: Colors.white),
-                tooltip: 'طباعة',
-                onPressed: () => _printUser(u),
-              ),
+                tooltip: L.get('print'),
+                onPressed: () => _printUser(u)),
               IconButton(
                 icon: const Icon(Icons.lock_reset_outlined, color: Colors.white),
-                onPressed: () => _changeUserPassword(u),
-              ),
+                onPressed: () => _changeUserPassword(u)),
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(fit: StackFit.expand, children: [
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topRight, end: Alignment.bottomLeft,
-                      colors: [const Color(0xFF1A2540), _roleColor.withValues(alpha: 0.6), const Color(0xFF1A2540)],
-                    ),
+                Container(decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight, end: Alignment.bottomLeft,
+                    colors: [const Color(0xFF1A2540), _roleColor.withValues(alpha: 0.6), const Color(0xFF1A2540)],
                   ),
-                ),
-                // decorative circles
+                )),
                 Positioned(right: -30, top: -30, child: Container(
                   width: 180, height: 180,
                   decoration: BoxDecoration(shape: BoxShape.circle,
@@ -416,18 +415,19 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                   decoration: BoxDecoration(shape: BoxShape.circle,
                       color: Colors.white.withValues(alpha: 0.04)),
                 )),
-                // content
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 70, 20, 20),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisAlignment: MainAxisAlignment.end, children: [
                     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      // status badge
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                         decoration: BoxDecoration(
-                          color: u.isActive ? const Color(0xFF00C897).withValues(alpha: 0.15) : const Color(0xFFFF5A5F).withValues(alpha: 0.15),
-                          border: Border.all(color: u.isActive ? const Color(0xFF00C897) : const Color(0xFFFF5A5F)),
+                          color: u.isActive
+                              ? const Color(0xFF00C897).withValues(alpha: 0.15)
+                              : const Color(0xFFFF5A5F).withValues(alpha: 0.15),
+                          border: Border.all(color: u.isActive
+                              ? const Color(0xFF00C897) : const Color(0xFFFF5A5F)),
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -435,12 +435,12 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                               color: u.isActive ? const Color(0xFF00C897) : const Color(0xFFFF5A5F),
                               shape: BoxShape.circle)),
                           const SizedBox(width: 6),
-                          Text(u.isActive ? 'نشط' : 'معلق', style: TextStyle(
-                              color: u.isActive ? const Color(0xFF00C897) : const Color(0xFFFF5A5F),
-                              fontWeight: FontWeight.bold, fontSize: 11)),
+                          Text(u.isActive ? L.get('active') : L.get('suspended'),
+                              style: TextStyle(
+                                  color: u.isActive ? const Color(0xFF00C897) : const Color(0xFFFF5A5F),
+                                  fontWeight: FontWeight.bold, fontSize: 11)),
                         ]),
                       ),
-                      // avatar + name
                       Row(children: [
                         Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                           Text(u.name, style: const TextStyle(color: Colors.white,
@@ -450,13 +450,12 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                             decoration: BoxDecoration(
                               color: _roleColor.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                              borderRadius: BorderRadius.circular(20)),
                             child: Row(mainAxisSize: MainAxisSize.min, children: [
                               Icon(_roleIcon, size: 12, color: _roleColor),
                               const SizedBox(width: 4),
-                              Text(u.role, style: TextStyle(color: _roleColor, fontSize: 12,
-                                  fontWeight: FontWeight.w600)),
+                              Text(_roleLabel(u.role), style: TextStyle(
+                                  color: _roleColor, fontSize: 12, fontWeight: FontWeight.w600)),
                             ]),
                           ),
                         ]),
@@ -466,10 +465,8 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _roleColor.withValues(alpha: 0.2),
-                            border: Border.all(color: _roleColor.withValues(alpha: 0.5), width: 2),
-                          ),
-                          child: Icon(_roleIcon, color: _roleColor, size: 26),
-                        ),
+                            border: Border.all(color: _roleColor.withValues(alpha: 0.5), width: 2)),
+                          child: Icon(_roleIcon, color: _roleColor, size: 26)),
                       ]),
                     ]),
                   ]),
@@ -483,90 +480,86 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
             padding: const EdgeInsets.all(16),
             sliver: SliverList(delegate: SliverChildListDelegate([
 
-              // بطاقة المعلومات الأساسية
+              // المعلومات الأساسية
               _UInfoCard(
                 icon: Icons.person_outlined,
-                title: 'المعلومات الأساسية',
+                title: L.isArabic ? 'المعلومات الأساسية' : 'Basic Information',
                 accentColor: _roleColor,
                 rows: [
-                  _URow('الاسم الكامل',  u.name),
-                  _URow('نوع المستخدم', u.role),
-                  _URow('رقم الهاتف',   u.phone.isEmpty    ? 'غير مسجل' : u.phone),
-                  _URow('رقم الهوية',   u.idNumber.isEmpty ? 'غير مسجل' : u.idNumber),
-                  _URow('الحالة',       u.status.isEmpty ? (u.isActive ? 'نشط' : 'معلق') : u.status),
+                  _URow(L.get('full_name'),  u.name),
+                  _URow(L.get('role'),       _roleLabel(u.role)),
+                  _URow(L.get('phone'),      u.phone.isEmpty    ? notRegistered : u.phone),
+                  _URow(L.get('id_number'),  u.idNumber.isEmpty ? notRegistered : u.idNumber),
+                  _URow(L.get('status'),     _statusLabel(u.status.isEmpty ? (u.isActive ? 'نشط' : 'معلق') : u.status)),
                   if ((u.role == 'سائق' || u.role == 'موظف أمن') && u.macAddress.isNotEmpty)
-                    _URow('MAC Address', u.macAddress),
+                    _URow(L.get('mac_address'), u.macAddress),
                 ],
               ),
               const SizedBox(height: 12),
 
-              // بطاقة الرخصة (سائق فقط)
+              // رخصة القيادة
               if (u.role == 'سائق') ...[
                 _UInfoCard(
                   icon: Icons.drive_eta_outlined,
-                  title: 'رخصة القيادة',
+                  title: L.isArabic ? 'رخصة القيادة' : 'Driver License',
                   accentColor: const Color(0xFF4B9EFF),
                   rows: [
-                    _URow('رقم الرخصة',         u.licenseNum.isEmpty       ? 'غير مسجل' : u.licenseNum),
-                    _URow('تاريخ الإصدار',       u.licenseIssueDate.isEmpty ? 'غير مسجل' : u.licenseIssueDate),
-                    _URow('تاريخ الانتهاء',      u.licenseExpiry.isEmpty    ? 'غير مسجل' : u.licenseExpiry,
+                    _URow(L.get('license_num'),    u.licenseNum.isEmpty       ? notRegistered : u.licenseNum),
+                    _URow(L.get('license_issue'),  u.licenseIssueDate.isEmpty ? notRegistered : u.licenseIssueDate),
+                    _URow(L.get('license_expiry'), u.licenseExpiry.isEmpty    ? notRegistered : u.licenseExpiry,
                         badge: _licenseBadge(u)),
-                    _URow('درجة الرخصة',        u.licenseGrade.isEmpty     ? 'غير مسجل' : u.licenseGrade),
+                    _URow(L.get('license_grade'),  u.licenseGrade.isEmpty     ? notRegistered : u.licenseGrade),
                   ],
                 ),
                 const SizedBox(height: 12),
               ],
 
-              // بطاقة الأمان
+              // الأمان
               _UInfoCard(
                 icon: Icons.security_outlined,
-                title: 'الأمان',
+                title: L.get('security_section'),
                 accentColor: const Color(0xFFFFB347),
                 rows: [
-                  _URow('كلمة السر', u.password.isEmpty ? 'غير محددة' : '●' * u.password.length),
+                  _URow(L.get('password'),
+                      u.password.isEmpty ? notDefined : '●' * u.password.length),
                 ],
               ),
               const SizedBox(height: 12),
 
-              // ── خطوط مشرف الخط ────────────────────────
+              // خطوط مشرف الخط
               if (u.role == 'مشرف خط') Builder(builder: (ctx) {
                 final supervisedLines = <int>[];
-                for (int i = 0; i < globalLines.length; i++) {
+                for (int i = 0; i < globalLines.length; i++)
                   if (globalLines[i].supervisor == u.name) supervisedLines.add(i);
-                }
                 return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   _UInfoCard(
                     icon: Icons.route_outlined,
-                    title: 'الخطوط المسؤول عنها (${supervisedLines.length})',
+                    title: '${L.isArabic ? "الخطوط المسؤول عنها" : "Supervised Lines"} (${supervisedLines.length})',
                     accentColor: const Color(0xFFFFB347),
                     rows: supervisedLines.isEmpty
-                      ? [const _URow('لا توجد خطوط مسندة لهذا المشرف', '')]
-                      : supervisedLines.map((i) {
-                          final line = globalLines[i];
-                          final numMatch = RegExp(r'\[(\d+)\]\s*(.*)').firstMatch(line.name);
-                          final lineNum  = numMatch?.group(1) ?? '—';
-                          final lineName = numMatch?.group(2) ?? line.name;
-                          return _URow('خط $lineNum', lineName);
-                        }).toList(),
+                        ? [_URow(L.isArabic ? 'لا توجد خطوط مسندة لهذا المشرف' : 'No assigned lines', '')]
+                        : supervisedLines.map((i) {
+                            final line = globalLines[i];
+                            final nm = RegExp(r'\[(\d+)\]\s*(.*)').firstMatch(line.name);
+                            return _URow('${L.get('line')} ${nm?.group(1) ?? ''}', nm?.group(2) ?? line.name);
+                          }).toList(),
                   ),
                   const SizedBox(height: 12),
                 ]);
               }),
 
-              // ── معلومات موظف الأمن ───────────────────────
+              // تنبيهات الأمن
               if (u.role == 'موظف أمن') Builder(builder: (ctx) {
-                // تنبيهات الأمن الخاصة بهذا الموظف
                 final myAlerts = globalSecurityNotifications
-                    .where((n) => n['role'] == 'security')
-                    .toList();
+                    .where((n) => n['role'] == 'security').toList();
                 return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   _UInfoCard(
                     icon: Icons.shield_outlined,
-                    title: 'تنبيهات الأمن (${myAlerts.length})',
+                    title: '${L.isArabic ? "تنبيهات الأمن" : "Security Alerts"} (${myAlerts.length})',
                     accentColor: const Color(0xFFB47AFF),
                     rows: myAlerts.isEmpty
-                      ? [const _URow('لا توجد تنبيهات أمنية', '')]
-                      : myAlerts.take(5).map((n) => _URow(
+                        ? [_URow(L.isArabic ? 'لا توجد تنبيهات أمنية' : 'No security alerts', '')]
+                        : myAlerts.take(5).map((n) => _URow(
                             n['title'] ?? '—',
                             '${n['body'] ?? ''}  •  ${n['time'] ?? ''}',
                           )).toList(),
@@ -575,7 +568,7 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                 ]);
               }),
 
-              // ── مركبات المالك ──────────────────────────
+              // مركبات المالك
               if (u.role == 'مالك سيارة') Builder(builder: (ctx) {
                 final owned = <LineVehicle>[];
                 for (final list in globalVehicles)
@@ -584,31 +577,30 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                 return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   _UInfoCard(
                     icon: Icons.directions_car_outlined,
-                    title: 'السيارات المملوكة (${owned.length})',
+                    title: '${L.isArabic ? "السيارات المملوكة" : "Owned Vehicles"} (${owned.length})',
                     accentColor: const Color(0xFF00C897),
                     rows: owned.isEmpty
-                      ? [const _URow('لا توجد سيارات مسجلة', '')]
-                      : owned.map((v) {
-                          // ابحث عن الخط
-                          String lineName = '—';
-                          for (int i = 0; i < globalVehicles.length; i++) {
-                            if (globalVehicles[i].any((x) => x.vehicleId == v.vehicleId)) {
-                              lineName = globalLines.length > i ? globalLines[i].name : '—';
-                              break;
+                        ? [_URow(L.isArabic ? 'لا توجد سيارات مسجلة' : 'No registered vehicles', '')]
+                        : owned.map((v) {
+                            String lineName = '—';
+                            for (int i = 0; i < globalVehicles.length; i++) {
+                              if (globalVehicles[i].any((x) => x.vehicleId == v.vehicleId)) {
+                                lineName = globalLines.length > i ? globalLines[i].name : '—';
+                                break;
+                              }
                             }
-                          }
-                          return _URow(
-                            'رقم: ${v.vehicleId}  |  خط: $lineName',
-                            '',
-                            badge: _statusBadge(v.status),
-                          );
-                        }).toList(),
+                            return _URow(
+                              '${L.get('plate_number')}: ${v.vehicleId}  |  ${L.get('line')}: $lineName',
+                              '',
+                              badge: _statusBadge(v.status),
+                            );
+                          }).toList(),
                   ),
                   const SizedBox(height: 12),
                 ]);
               }),
 
-              // ── مركبة السائق ────────────────────────────
+              // مركبة السائق
               if (u.role == 'سائق') Builder(builder: (ctx) {
                 LineVehicle? driven;
                 String driverLineName = '—';
@@ -625,24 +617,24 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                 return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   _UInfoCard(
                     icon: Icons.drive_eta_outlined,
-                    title: 'السيارة المُقادة',
+                    title: L.isArabic ? 'السيارة المُقادة' : 'Assigned Vehicle',
                     accentColor: const Color(0xFF4B9EFF),
                     rows: driven == null
-                      ? [const _URow('لا توجد سيارة مرتبطة بهذا السائق', '')]
-                      : [
-                          _URow('رقم السيارة',  driven.vehicleId),
-                          _URow('اسم المالك',   driven.ownerName),
-                          _URow('الخط',         driverLineName),
-                          _URow('الحالة',       driven.status, badge: _statusBadge(driven.status)),
-                        ],
+                        ? [_URow(L.isArabic ? 'لا توجد سيارة مرتبطة بهذا السائق' : 'No vehicle assigned', '')]
+                        : [
+                            _URow(L.get('plate_number'), driven.vehicleId),
+                            _URow(L.get('owner_name'),   driven.ownerName),
+                            _URow(L.get('line'),         driverLineName),
+                            _URow(L.get('status'),       driven.status, badge: _statusBadge(driven.status)),
+                          ],
                   ),
                   const SizedBox(height: 12),
                 ]);
               }),
 
-              // ── السجل التاريخي ─────────────────
+              // السجل التاريخي
               Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                Text('السجل التاريخي',
+                Text(L.isArabic ? 'السجل التاريخي' : 'Activity Log',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: context.textPrimary)),
                 const Spacer(),
                 Container(
@@ -650,26 +642,24 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                   decoration: BoxDecoration(
                     color: _roleColor.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: _roleColor.withValues(alpha: 0.25)),
-                  ),
+                    border: Border.all(color: _roleColor.withValues(alpha: 0.25))),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
                     Icon(Icons.history_rounded, size: 13, color: _roleColor),
                     const SizedBox(width: 4),
-                    Text('${_history.length} أحداث',
+                    Text('${_history.length} ${L.isArabic ? "أحداث" : "events"}',
                         style: TextStyle(fontSize: 11, color: _roleColor, fontWeight: FontWeight.w700)),
                   ]),
                 ),
               ]),
               const SizedBox(height: 12),
 
-              // Timeline cards
+              // Timeline
               ..._history.asMap().entries.map((entry) {
                 final i      = entry.key;
                 final h      = entry.value;
                 final type   = h['type'] ?? 'default';
                 final isLast = i == _history.length - 1;
 
-                // لون وأيقونة حسب النوع
                 final Color evColor;
                 final IconData evIcon;
                 switch (type) {
@@ -681,96 +671,57 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                   default:         evColor = const Color(0xFF8A93A8); evIcon = Icons.radio_button_checked;
                 }
 
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── عمود الخط والنقطة
-                    SizedBox(
-                      width: 48,
-                      child: Column(children: [
-                        const SizedBox(height: 10),
-                        // النقطة الدائرية المضيئة
+                return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  SizedBox(width: 48, child: Column(children: [
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(
+                        color: evColor.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: evColor.withValues(alpha: 0.35), width: 1.5)),
+                      child: Icon(evIcon, size: 17, color: evColor)),
+                    if (!isLast) Container(
+                      width: 2, height: 28,
+                      margin: const EdgeInsets.symmetric(vertical: 3),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                          colors: [evColor.withValues(alpha: 0.4), Colors.transparent]),
+                      )),
+                  ])),
+                  const SizedBox(width: 10),
+                  Expanded(child: Padding(
+                    padding: EdgeInsets.only(bottom: isLast ? 0 : 6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: context.cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: evColor.withValues(alpha: 0.18)),
+                        boxShadow: [BoxShadow(color: evColor.withValues(alpha: 0.07),
+                            blurRadius: 8, offset: const Offset(0, 2))]),
+                      child: Row(children: [
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(h['event']!, style: TextStyle(
+                              fontSize: 13, fontWeight: FontWeight.w600, color: context.textPrimary)),
+                          const SizedBox(height: 4),
+                          Row(children: [
+                            Icon(Icons.calendar_today_outlined, size: 11, color: context.textSecondary),
+                            const SizedBox(width: 4),
+                            Text(h['date']!, style: TextStyle(fontSize: 11, color: context.textSecondary)),
+                          ]),
+                        ])),
                         Container(
-                          width: 36, height: 36,
+                          width: 22, height: 22,
                           decoration: BoxDecoration(
-                            color: evColor.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: evColor.withValues(alpha: 0.35), width: 1.5),
-                          ),
-                          child: Icon(evIcon, size: 17, color: evColor),
-                        ),
-                        // خط رابط
-                        if (!isLast)
-                          Container(
-                            width: 2, height: 28,
-                            margin: const EdgeInsets.symmetric(vertical: 3),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                                colors: [evColor.withValues(alpha: 0.4), Colors.transparent],
-                              ),
-                            ),
-                          ),
+                              color: evColor.withValues(alpha: 0.12), shape: BoxShape.circle),
+                          child: Center(child: Text('${i + 1}',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: evColor)))),
                       ]),
                     ),
-                    const SizedBox(width: 10),
-
-                    // ── بطاقة الحدث
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: isLast ? 0 : 6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                          decoration: BoxDecoration(
-                            color: context.cardColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: evColor.withValues(alpha: 0.18)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: evColor.withValues(alpha: 0.07),
-                                blurRadius: 8, offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(children: [
-                            Expanded(child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(h['event']!,
-                                    style: TextStyle(
-                                      fontSize: 13, fontWeight: FontWeight.w600,
-                                      color: context.textPrimary,
-                                    )),
-                                const SizedBox(height: 4),
-                                Row(children: [
-                                  Icon(Icons.calendar_today_outlined,
-                                      size: 11, color: context.textSecondary),
-                                  const SizedBox(width: 4),
-                                  Text(h['date']!,
-                                      style: TextStyle(fontSize: 11, color: context.textSecondary)),
-                                ]),
-                              ],
-                            )),
-                            // رقم الحدث
-                            Container(
-                              width: 22, height: 22,
-                              decoration: BoxDecoration(
-                                color: evColor.withValues(alpha: 0.12),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text('${i + 1}',
-                                    style: TextStyle(
-                                      fontSize: 10, fontWeight: FontWeight.bold, color: evColor,
-                                    )),
-                              ),
-                            ),
-                          ]),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
+                  )),
+                ]);
               }),
               const SizedBox(height: 32),
             ])),
@@ -782,16 +733,17 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
 
   Widget _statusBadge(String status) {
     final Color c;
+    final String label;
     switch (status) {
-      case 'جاهزة':   c = const Color(0xFF00C897); break;
-      case 'في الخط': c = const Color(0xFF4B9EFF); break;
-      case 'محظورة':  c = const Color(0xFFFF5A5F); break;
-      default:         c = const Color(0xFFFFB347);
+      case 'جاهزة':   c = const Color(0xFF00C897); label = L.get('status_ready');   break;
+      case 'في الخط': c = const Color(0xFF4B9EFF); label = L.get('status_in_line'); break;
+      case 'محظورة':  c = const Color(0xFFFF5A5F); label = L.get('status_banned');  break;
+      default:         c = const Color(0xFFFFB347); label = L.get('status_waiting');
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(color: c.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-      child: Text(status, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: c)),
+      child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: c)),
     );
   }
 
@@ -804,18 +756,20 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: isExpired ? const Color(0xFFFF5A5F).withValues(alpha: 0.12) : const Color(0xFF00C897).withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(isExpired ? 'منتهية!' : 'سارية', style: TextStyle(
-        fontSize: 10, fontWeight: FontWeight.bold,
-        color: isExpired ? const Color(0xFFFF5A5F) : const Color(0xFF00C897),
-      )),
+        color: isExpired
+            ? const Color(0xFFFF5A5F).withValues(alpha: 0.12)
+            : const Color(0xFF00C897).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8)),
+      child: Text(
+        isExpired
+            ? (L.isArabic ? 'منتهية!' : 'Expired!')
+            : (L.isArabic ? 'سارية'   : 'Valid'),
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold,
+            color: isExpired ? const Color(0xFFFF5A5F) : const Color(0xFF00C897))),
     );
   }
 }
 
-// ── Card widget للمستخدم ─────────────────────
 class _UInfoCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -829,23 +783,19 @@ class _UInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))],
-      ),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))]),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: accentColor.withValues(alpha: 0.08),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            border: Border(bottom: BorderSide(color: accentColor.withValues(alpha: 0.2))),
-          ),
+            border: Border(bottom: BorderSide(color: accentColor.withValues(alpha: 0.2)))),
           child: Row(children: [
-            Container(
-              width: 30, height: 30,
-              decoration: BoxDecoration(color: accentColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8)),
-              child: Icon(icon, size: 16, color: accentColor),
-            ),
+            Container(width: 30, height: 30,
+                decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+                child: Icon(icon, size: 16, color: accentColor)),
             const SizedBox(width: 10),
             Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: accentColor)),
           ]),
@@ -854,13 +804,13 @@ class _UInfoCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(children: rows.asMap().entries.map((e) {
             final isLast = e.key == rows.length - 1;
-            final row = e.value;
+            final row    = e.value;
             return Padding(
               padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
               child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
                 Text('• ', style: TextStyle(color: accentColor, fontSize: 14, fontWeight: FontWeight.bold)),
                 Expanded(child: RichText(
-                  textDirection: TextDirection.rtl,
+                  textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
                   text: TextSpan(
                     style: TextStyle(fontSize: 13, fontFamily: 'Tajawal', color: context.textPrimary),
                     children: [

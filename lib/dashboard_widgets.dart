@@ -9,9 +9,9 @@ class _HeaderCard extends StatefulWidget {
 class _HeaderCardState extends State<_HeaderCard> with DarkModeRebuild<_HeaderCard> {
   String _greeting() {
     final h = DateTime.now().hour;
-    if (h < 12) return 'صباح الخير';
-    if (h < 17) return 'مساء الخير';
-    return 'مساء النور';
+    if (h < 12) return L.get('greeting_morning');
+    if (h < 17) return L.get('greeting_afternoon');
+    return L.get('greeting_evening');
   }
   @override
   Widget build(BuildContext context) {
@@ -37,8 +37,8 @@ class _HeaderCardState extends State<_HeaderCard> with DarkModeRebuild<_HeaderCa
                 Text(_greeting() + '، $profileName',
                     style: const TextStyle(color: Colors.white70, fontSize: 12)),
                 const SizedBox(height: 2),
-                Text('Main Dashboard',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(L.get('dashboard'),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 2),
                 Text(dateStr, style: const TextStyle(color: Colors.white54, fontSize: 11)),
               ],
@@ -52,11 +52,11 @@ class _HeaderCardState extends State<_HeaderCard> with DarkModeRebuild<_HeaderCa
             ),
             child: Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white12,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.notifications_outlined,
+              child: const Icon(Icons.notifications_outlined,
                   color: Colors.white, size: 20),
             ),
           ),
@@ -67,7 +67,7 @@ class _HeaderCardState extends State<_HeaderCard> with DarkModeRebuild<_HeaderCa
               context,
               MaterialPageRoute(builder: (_) => const _ProfilePage()),
             ),
-            child: CircleAvatar(
+            child: const CircleAvatar(
               radius: 18,
               backgroundColor: Colors.white30,
               child: Icon(Icons.person, color: Colors.white, size: 20),
@@ -229,11 +229,11 @@ class _EventCardState extends State<_EventCard> with DarkModeRebuild<_EventCard>
   String get _badgeLabel {
     switch (widget.event.type) {
       case EventType.entry:
-        return 'دخول';
+        return L.get('entry');
       case EventType.exit:
-        return 'خروج';
+        return L.get('exit');
       case EventType.violation:
-        return 'مخالفة';
+        return L.get('violation');
     }
   }
 
@@ -290,7 +290,7 @@ class _EventCardState extends State<_EventCard> with DarkModeRebuild<_EventCard>
                 const SizedBox(height: 2),
                 Text(
                   widget.event.location,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF8A93A8),
                   ),
@@ -302,7 +302,7 @@ class _EventCardState extends State<_EventCard> with DarkModeRebuild<_EventCard>
           // Time
           Text(
             widget.event.time,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
               color: Color(0xFF8A93A8),
             ),

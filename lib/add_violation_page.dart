@@ -7,8 +7,6 @@ class _AddViolationPage extends StatefulWidget {
   State<_AddViolationPage> createState() => _AddViolationPageState();
 }
 
-// قائمة أنواع المخالفات
-
 class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebuild<_AddViolationPage> {
   final _formKey        = GlobalKey<FormState>();
   final _numCtrl        = TextEditingController();
@@ -16,17 +14,9 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
   final _amountCtrl     = TextEditingController();
   final _customTypeCtrl = TextEditingController();
   String? _selectedType;
-  bool _banVehicle = false; // حظر المركبة عند الحفظ
+  bool _banVehicle = false;
 
-  @override
-  void initState() {
-    super.initState();
-    // رقم مخالفة مقترح — قابل للتعديل
-    final n = globalEvents.where((e) => e.type == EventType.violation).length + 1;
-    _numCtrl.text = ''; // رقم يدوي — يكتبه المستخدم
-  }
-
-  InputDecoration _inputDec(String hint, {int maxLines = 1}) => InputDecoration(
+  InputDecoration _inputDec(String hint) => InputDecoration(
     hintText: hint,
     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
     filled: true,
@@ -52,20 +42,25 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
         fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimary)),
   );
 
-  // ── dialog ما بعد تسجيل المخالفة ──────────────────────────────────
+  // نوع الشكوى الأخرى
+  String get _otherType => L.get('other_complaint');
+
+  List<String> get _violationItems => kViolationTypes
+      .map((t) => t['name']! == 'مخالفة أخرى' ? _otherType : t['name']!)
+      .toList();
+
   void _showViolationFollowUp(
       BuildContext ctx, String vehicleId, String violationNum, String amount, String typeName) {
-    bool feesPaid       = false;
-    bool extendEntry    = false;
+    bool feesPaid    = false;
+    bool extendEntry = false;
     DateTime? entryDate;
-    final amountDouble  = double.tryParse(amount) ?? 0;
 
     showDialog(
       context: ctx,
       barrierDismissible: false,
       builder: (_) => StatefulBuilder(
         builder: (dlgCtx, setDlg) => Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
           child: Dialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
@@ -97,14 +92,12 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                         ),
                         const SizedBox(width: 12),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('تم تسجيل المخالفة', style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                          Text(violationNum, style: const TextStyle(
-                              color: Colors.white60, fontSize: 12)),
+                          Text(L.get('complaint_recorded'),
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                          Text(violationNum, style: const TextStyle(color: Colors.white60, fontSize: 12)),
                         ])),
                       ]),
                       const SizedBox(height: 10),
-                      // بطاقة التفاصيل
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
@@ -113,15 +106,15 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                         ),
                         child: Row(children: [
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('المركبة', style: const TextStyle(color: Colors.white60, fontSize: 11)),
+                            Text(L.get('vehicle'), style: const TextStyle(color: Colors.white60, fontSize: 11)),
                             Text(vehicleId, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                           ])),
                           Container(width: 1, height: 30, color: Colors.white24),
                           Expanded(child: Padding(
                             padding: const EdgeInsets.only(right: 12),
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text('المبلغ', style: const TextStyle(color: Colors.white60, fontSize: 11)),
-                              Text('\$amount ₪', style: const TextStyle(
+                              Text(L.get('amount'), style: const TextStyle(color: Colors.white60, fontSize: 11)),
+                              Text('$amount ₪', style: const TextStyle(
                                   color: Color(0xFFFFB347), fontSize: 13, fontWeight: FontWeight.bold)),
                             ]),
                           )),
@@ -131,10 +124,9 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                   ),
                   const SizedBox(height: 20),
 
-                  // ── قسم دفع الرسوم ─────────────────────
-                  Text('الرسوم والغرامة', style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14,
-                      color: dlgCtx.textPrimary)),
+                  // ── دفع الرسوم ─────────────────────────
+                  Text(L.get('fees_and_fine'),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: dlgCtx.textPrimary)),
                   const SizedBox(height: 10),
                   _Tap(
                     onTap: () => setDlg(() => feesPaid = !feesPaid),
@@ -142,14 +134,10 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: feesPaid
-                            ? const Color(0xFFE8F5E9)
-                            : dlgCtx.cardColor,
+                        color: feesPaid ? const Color(0xFFE8F5E9) : dlgCtx.cardColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: feesPaid
-                              ? const Color(0xFF2E7D32)
-                              : dlgCtx.dividerColor,
+                          color: feesPaid ? const Color(0xFF2E7D32) : dlgCtx.dividerColor,
                           width: feesPaid ? 2 : 1,
                         ),
                       ),
@@ -165,25 +153,19 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                             ),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: feesPaid
-                              ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
-                              : null,
+                          child: feesPaid ? const Icon(Icons.check_rounded, size: 16, color: Colors.white) : null,
                         ),
                         const SizedBox(width: 12),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('تم دفع رسوم المخالفة',
-                              style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w600,
-                                color: feesPaid ? const Color(0xFF2E7D32) : dlgCtx.textPrimary,
-                              )),
+                          Text(L.get('fees_paid'),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+                                  color: feesPaid ? const Color(0xFF2E7D32) : dlgCtx.textPrimary)),
                           Text(
                             feesPaid
-                                ? 'تم استلام \$amount ₪ ✓'
-                                : 'المبلغ المستحق: \$amount ₪',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: feesPaid ? const Color(0xFF2E7D32) : Colors.orange[700],
-                            )),
+                                ? '${L.get('received')} $amount ₪ ✓'
+                                : '${L.get('amount_due')} $amount ₪',
+                            style: TextStyle(fontSize: 12,
+                                color: feesPaid ? const Color(0xFF2E7D32) : Colors.orange[700])),
                         ])),
                         if (!feesPaid)
                           Container(
@@ -192,18 +174,17 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                               color: Colors.orange.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text('معلق', style: TextStyle(
-                                fontSize: 11, color: Colors.orange[700], fontWeight: FontWeight.bold)),
+                            child: Text(L.get('pending'),
+                                style: TextStyle(fontSize: 11, color: Colors.orange[700], fontWeight: FontWeight.bold)),
                           ),
                       ]),
                     ),
                   ),
                   const SizedBox(height: 20),
 
-                  // ── قسم تمديد تاريخ الدخول ────────────
-                  Text('السماح بالدخول', style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 14,
-                      color: dlgCtx.textPrimary)),
+                  // ── السماح بالدخول ─────────────────────
+                  Text(L.get('allow_entry'),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: dlgCtx.textPrimary)),
                   const SizedBox(height: 10),
                   _Tap(
                     onTap: () => setDlg(() => extendEntry = !extendEntry),
@@ -211,14 +192,10 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: extendEntry
-                            ? const Color(0xFFE3F2FD)
-                            : dlgCtx.cardColor,
+                        color: extendEntry ? const Color(0xFFE3F2FD) : dlgCtx.cardColor,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: extendEntry
-                              ? const Color(0xFF1565C0)
-                              : dlgCtx.dividerColor,
+                          color: extendEntry ? const Color(0xFF1565C0) : dlgCtx.dividerColor,
                           width: extendEntry ? 2 : 1,
                         ),
                       ),
@@ -234,18 +211,14 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                             ),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: extendEntry
-                              ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
-                              : null,
+                          child: extendEntry ? const Icon(Icons.check_rounded, size: 16, color: Colors.white) : null,
                         ),
                         const SizedBox(width: 12),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('تمديد تاريخ السماح بالدخول',
-                              style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w600,
-                                color: extendEntry ? const Color(0xFF1565C0) : dlgCtx.textPrimary,
-                              )),
-                          Text('تحديد تاريخ يُسمح فيه للمركبة بالدخول',
+                          Text(L.get('extend_entry_date'),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+                                  color: extendEntry ? const Color(0xFF1565C0) : dlgCtx.textPrimary)),
+                          Text(L.get('set_entry_date'),
                               style: TextStyle(fontSize: 12, color: dlgCtx.textSecondary)),
                         ])),
                         const Icon(Icons.calendar_month_outlined, size: 18, color: Color(0xFF1565C0)),
@@ -253,7 +226,6 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                     ),
                   ),
 
-                  // date picker يظهر عند تفعيل التمديد
                   if (extendEntry) ...[
                     const SizedBox(height: 10),
                     _Tap(
@@ -263,9 +235,9 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                           initialDate: DateTime.now().add(const Duration(days: 1)),
                           firstDate: DateTime.now(),
                           lastDate: DateTime(2035),
-                          helpText: 'اختر تاريخ السماح بالدخول',
-                          confirmText: 'تأكيد',
-                          cancelText: 'إلغاء',
+                          helpText: L.get('select_entry_date'),
+                          confirmText: L.get('confirm'),
+                          cancelText: L.get('cancel'),
                         );
                         if (picked != null) setDlg(() => entryDate = picked);
                       },
@@ -275,9 +247,7 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                           color: dlgCtx.bgColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: entryDate != null
-                                ? const Color(0xFF1565C0)
-                                : dlgCtx.dividerColor,
+                            color: entryDate != null ? const Color(0xFF1565C0) : dlgCtx.dividerColor,
                           ),
                         ),
                         child: Row(children: [
@@ -286,8 +256,8 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                           const SizedBox(width: 10),
                           Expanded(child: Text(
                             entryDate != null
-                                ? '\${entryDate!.year}-\${entryDate!.month.toString().padLeft(2,"0")}-\${entryDate!.day.toString().padLeft(2,"0")}'
-                                : 'اضغط لاختيار التاريخ...',
+                                ? '${entryDate!.year}-${entryDate!.month.toString().padLeft(2,"0")}-${entryDate!.day.toString().padLeft(2,"0")}'
+                                : L.get('tap_to_select_date'),
                             style: TextStyle(
                               fontSize: 14,
                               color: entryDate != null ? const Color(0xFF1565C0) : Colors.grey,
@@ -302,10 +272,8 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                '\${entryDate!.difference(DateTime.now()).inDays} يوم',
-                                style: const TextStyle(
-                                    fontSize: 11, color: Color(0xFF1565C0), fontWeight: FontWeight.bold),
-                              ),
+                                '${entryDate!.difference(DateTime.now()).inDays} ${L.get('days')}',
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF1565C0), fontWeight: FontWeight.bold)),
                             ),
                         ]),
                       ),
@@ -324,7 +292,8 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         onPressed: () => Navigator.pop(dlgCtx),
-                        child: Text('لاحقاً', style: TextStyle(color: dlgCtx.textSecondary)),
+                        child: Text(L.get('later'),
+                            style: TextStyle(color: dlgCtx.textSecondary)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -337,14 +306,14 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         icon: const Icon(Icons.save_outlined, color: Colors.white, size: 18),
-                        label: const Text('حفظ وإغلاق', style: TextStyle(color: Colors.white, fontSize: 14)),
+                        label: Text(L.get('save_and_close'),
+                            style: const TextStyle(color: Colors.white, fontSize: 14)),
                         onPressed: () {
-                          // تحديث آخر حدث مخالفة بالرسوم والتاريخ
                           final idx = globalEvents.lastIndexWhere(
                               (e) => e.type == EventType.violation && e.vehicleId == vehicleId);
                           if (idx != -1) {
                             final dateStr = entryDate != null
-                                ? '\${entryDate!.year}-\${entryDate!.month.toString().padLeft(2,"0")}-\${entryDate!.day.toString().padLeft(2,"0")}'
+                                ? '${entryDate!.year}-${entryDate!.month.toString().padLeft(2,"0")}-${entryDate!.day.toString().padLeft(2,"0")}'
                                 : null;
                             globalEvents[idx] = globalEvents[idx].copyWith(
                               feesPaid: feesPaid,
@@ -358,13 +327,13 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                               const SizedBox(width: 10),
                               Expanded(child: Text(
                                 feesPaid && entryDate != null
-                                    ? 'تم حفظ المخالفة • رسوم مدفوعة • دخول مُمدَّد'
+                                    ? L.get('fees_paid_entry_extended')
                                     : feesPaid
-                                        ? 'تم حفظ المخالفة • رسوم مدفوعة'
+                                        ? L.get('saved_fees_paid')
                                         : extendEntry && entryDate != null
-                                            ? 'تم حفظ المخالفة • دخول مُمدَّد'
-                                            : 'تم حفظ المخالفة',
-                                textDirection: TextDirection.rtl,
+                                            ? L.get('saved_entry_extended')
+                                            : L.get('complaint_saved'),
+                                textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
                                 style: const TextStyle(fontSize: 13),
                               )),
                             ]),
@@ -391,14 +360,14 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
           backgroundColor: const Color(0xFF2D3A5C),
           elevation: 0,
-          title: const Text('إضافة شكوى جديدة',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          title: Text(L.get('add_violation'),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
@@ -411,63 +380,71 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // رقم المخالفة — يدوي
-                _label('رقم الشكوى'),
+
+                // ── رقم الشكوى ──────────────────────────
+                _label(L.get('complaint_number')),
                 TextFormField(
                   controller: _numCtrl,
                   textDirection: TextDirection.ltr,
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
-                  decoration: _inputDec('مثال: V-0001').copyWith(
+                  decoration: _inputDec('V-0001').copyWith(
                     prefixIcon: const Icon(Icons.tag, size: 18, color: Color(0xFF2D3A5C)),
                   ),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'رقم الشكوى مطلوب' : null,
+                  validator: (v) => v == null || v.trim().isEmpty
+                      ? L.get('complaint_num_required')
+                      : null,
                 ),
                 const SizedBox(height: 16),
 
-                // نوع المخالفة — قائمة منسدلة
-                _label('نوع الشكوى'),
+                // ── نوع الشكوى ──────────────────────────
+                _label(L.get('violation_type')),
                 _SearchableDropdown(
-                  hint: 'اختر نوع الشكوى',
-                  items: kViolationTypes.map((t) => (t['name']! == 'مخالفة أخرى' ? 'شكوى أخرى' : t['name']!)).toList(),
+                  hint: L.get('select_complaint_type'),
+                  items: _violationItems,
                   selected: _selectedType,
                   onSelected: (v) {
                     setState(() => _selectedType = v);
-                    final found = kViolationTypes.firstWhere((t) => t['name'] == v, orElse: () => {});
+                    final found = kViolationTypes.firstWhere(
+                        (t) => t['name'] == v || (v == _otherType && t['name'] == 'مخالفة أخرى'),
+                        orElse: () => {});
                     if (found.isNotEmpty) _amountCtrl.text = found['amount']!;
                   },
-                  validator: (v) => (v == null || v.isEmpty) ? 'يجب اختيار نوع الشكوى' : null,
+                  validator: (v) => (v == null || v.isEmpty)
+                      ? L.get('complaint_required')
+                      : null,
                 ),
                 const SizedBox(height: 16),
 
-                // وصف المخالفة — يظهر فقط عند "مخالفة أخرى"
-                if (_selectedType == 'شكوى أخرى') ...[
-                  _label('وصف الشكوى'),
+                // ── وصف (عند شكوى أخرى) ─────────────────
+                if (_selectedType == _otherType) ...[
+                  _label(L.get('complaint_description')),
                   TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                    onEditingComplete: () => FocusScope.of(context).nextFocus(),
                     controller: _customTypeCtrl,
-                    decoration: _inputDec('اكتب وصف الشكوى...'),
+                    decoration: _inputDec(L.get('write_description')),
                     validator: (v) {
-                      if (_selectedType == 'شكوى أخرى' && (v == null || v.trim().isEmpty))
-                        return 'يجب كتابة وصف الشكوى';
+                      if (_selectedType == _otherType && (v == null || v.trim().isEmpty))
+                        return L.get('description_required');
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
                 ],
-                const SizedBox(height: 16),
 
-                // ملاحظات
-                _label('ملاحظات'),
+                // ── ملاحظات ─────────────────────────────
+                _label(L.get('notes')),
                 TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                  onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _msgCtrl,
-                  decoration: _inputDec('أي ملاحظات إضافية...')
-                  ,validator: (v) => v == null || v.trim().isEmpty ? 'الملاحظات مطلوبة' : null,
+                  decoration: _inputDec(L.get('additional_notes')),
+                  validator: (v) => v == null || v.trim().isEmpty
+                      ? L.get('notes_required')
+                      : null,
                   maxLines: 3,
                 ),
                 const SizedBox(height: 16),
 
-                // ── زر المنع ────────────────────────────
+                // ── زر الحظر ────────────────────────────
                 _Tap(
                   onTap: () => setState(() => _banVehicle = !_banVehicle),
                   child: AnimatedContainer(
@@ -480,9 +457,7 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                           : context.cardColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _banVehicle
-                            ? const Color(0xFFFF5A5F)
-                            : context.dividerColor,
+                        color: _banVehicle ? const Color(0xFFFF5A5F) : context.dividerColor,
                         width: _banVehicle ? 1.5 : 1,
                       ),
                     ),
@@ -491,63 +466,44 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                         duration: const Duration(milliseconds: 200),
                         width: 24, height: 24,
                         decoration: BoxDecoration(
-                          color: _banVehicle
-                              ? const Color(0xFFFF5A5F)
-                              : Colors.transparent,
+                          color: _banVehicle ? const Color(0xFFFF5A5F) : Colors.transparent,
                           border: Border.all(
-                            color: _banVehicle
-                                ? const Color(0xFFFF5A5F)
-                                : Colors.grey,
+                            color: _banVehicle ? const Color(0xFFFF5A5F) : Colors.grey,
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: _banVehicle
-                            ? const Icon(Icons.check_rounded,
-                                size: 15, color: Colors.white)
+                            ? const Icon(Icons.check_rounded, size: 15, color: Colors.white)
                             : null,
                       ),
                       const SizedBox(width: 12),
-                      Icon(
-                        Icons.block_rounded,
-                        size: 20,
-                        color: _banVehicle
-                            ? const Color(0xFFFF5A5F)
-                            : context.textSecondary,
-                      ),
+                      Icon(Icons.block_rounded, size: 20,
+                          color: _banVehicle ? const Color(0xFFFF5A5F) : context.textSecondary),
                       const SizedBox(width: 8),
-                      Expanded(child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('حظر المركبة',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: _banVehicle
-                                    ? const Color(0xFFFF5A5F)
-                                    : context.textPrimary,
-                              )),
-                          Text(
-                            _banVehicle
-                                ? 'سيتم حظر المركبة عند الحفظ'
-                                : 'اضغط لحظر المركبة مع تسجيل المخالفة',
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: _banVehicle
-                                    ? const Color(0xFFFF5A5F).withValues(alpha: 0.8)
-                                    : context.textSecondary),
-                          ),
-                        ],
-                      )),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(L.get('ban_vehicle'),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold,
+                                color: _banVehicle ? const Color(0xFFFF5A5F) : context.textPrimary)),
+                        Text(
+                          _banVehicle
+                              ? L.get('vehicle_will_be_banned')
+                              : L.get('tap_to_ban'),
+                          style: TextStyle(fontSize: 11,
+                              color: _banVehicle
+                                  ? const Color(0xFFFF5A5F).withValues(alpha: 0.8)
+                                  : context.textSecondary),
+                        ),
+                      ])),
                     ]),
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
+                // ── زر الحفظ ────────────────────────────
                 SizedBox(
-                  width: double.infinity,
-                  height: 52,
+                  width: double.infinity, height: 52,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2D3A5C),
@@ -555,20 +511,21 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                     ),
                     onPressed: () {
                       if (!_formKey.currentState!.validate()) return;
-                      final typeName = _selectedType == 'شكوى أخرى' && _customTypeCtrl.text.trim().isNotEmpty
+                      final typeName = _selectedType == _otherType && _customTypeCtrl.text.trim().isNotEmpty
                           ? _customTypeCtrl.text.trim()
                           : _selectedType!;
 
-                      // تسجيل المخالفة
                       logEvent(EventItem(
-                        vehicleId: widget.vehicleId.isEmpty ? 'غير محدد' : widget.vehicleId,
+                        vehicleId: widget.vehicleId.isEmpty
+                            ? L.get('unknown')
+                            : widget.vehicleId,
                         location: typeName,
-                        time: nowTime(),
-                        type: EventType.violation,
-                        violationNote: '${_numCtrl.text.trim()} | $typeName | ${_amountCtrl.text.trim()} ₪${_msgCtrl.text.trim().isNotEmpty ? " | ${_msgCtrl.text.trim()}" : ""}',
+                        time:     nowTime(),
+                        type:     EventType.violation,
+                        violationNote: '${_numCtrl.text.trim()} | $typeName | ${_amountCtrl.text.trim()} ₪'
+                            '${_msgCtrl.text.trim().isNotEmpty ? " | ${_msgCtrl.text.trim()}" : ""}',
                       ));
 
-                      // تطبيق الحظر إذا مفعّل
                       if (_banVehicle && widget.vehicleId.isNotEmpty) {
                         String supervisorName = '';
                         for (int i = 0; i < globalLines.length; i++) {
@@ -576,21 +533,18 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                             if (globalVehicles[i][j].vehicleId == widget.vehicleId) {
                               final old = globalVehicles[i][j];
                               globalVehicles[i][j] = LineVehicle(
-                                number: old.number,
-                                vehicleId: old.vehicleId,
-                                status: 'محظورة',
-                                note: old.note,
-                                ownerName: old.ownerName,
-                                carLicExpiry: old.carLicExpiry,
-                                insuranceExpiry: old.insuranceExpiry,
-                                operatingLicNum: old.operatingLicNum,
+                                number:           old.number,
+                                vehicleId:        old.vehicleId,
+                                status:           'محظورة',
+                                note:             old.note,
+                                ownerName:        old.ownerName,
+                                carLicExpiry:     old.carLicExpiry,
+                                insuranceExpiry:  old.insuranceExpiry,
+                                operatingLicNum:  old.operatingLicNum,
                                 operatingLicDate: old.operatingLicDate,
-                                rfidTag: old.rfidTag,
+                                rfidTag:          old.rfidTag,
                               );
-                              // ابحث عن مشرف الخط
-                              if (i < globalLines.length) {
-                                supervisorName = globalLines[i].supervisor;
-                              }
+                              if (i < globalLines.length) supervisorName = globalLines[i].supervisor;
                             }
                           }
                         }
@@ -598,25 +552,26 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
 
                         final now = nowTime();
                         final vid = widget.vehicleId;
-                        final vtype = typeName;
 
-                        // ── تنبيه لموظف الأمن ──────────────────
                         globalSecurityNotifications.insert(0, {
-                          'title': '🚫 تم حظر مركبة',
-                          'body': 'المركبة $vid محظورة بسبب: $vtype — مطلوبة لدى مدير المحطة',
-                          'time': now,
-                          'type': 'banned',
-                          'role': 'security',
+                          'title': L.isArabic ? '🚫 تم حظر مركبة' : '🚫 Vehicle Banned',
+                          'body':  L.isArabic
+                              ? 'المركبة $vid محظورة بسبب: $typeName — مطلوبة لدى مدير المحطة'
+                              : 'Vehicle $vid banned due to: $typeName — required by station manager',
+                          'time':  now,
+                          'type':  'banned',
+                          'role':  'security',
                         });
 
-                        // ── تنبيه لمشرف الخط ───────────────────
                         if (supervisorName.isNotEmpty) {
                           globalSecurityNotifications.insert(0, {
-                            'title': '⚠️ مركبة محظورة في خطك',
-                            'body': 'المركبة $vid في خطك محظورة — يرجى التواصل مع الإدارة',
-                            'time': now,
-                            'type': 'supervisor_alert',
-                            'role': 'supervisor',
+                            'title': L.isArabic ? '⚠️ مركبة محظورة في خطك' : '⚠️ Banned vehicle in your line',
+                            'body':  L.isArabic
+                                ? 'المركبة $vid في خطك محظورة — يرجى التواصل مع الإدارة'
+                                : 'Vehicle $vid in your line is banned — contact management',
+                            'time':      now,
+                            'type':      'supervisor_alert',
+                            'role':      'supervisor',
                             'supervisor': supervisorName,
                           });
                         }
@@ -628,20 +583,20 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
                           const SizedBox(width: 8),
                           Text(
                             _banVehicle
-                                ? 'تم حفظ الشكوى وحظر المركبة'
-                                : 'تم حفظ الشكوى',
-                            textDirection: TextDirection.rtl,
+                                ? L.get('complaint_and_banned')
+                                : L.get('complaint_saved'),
+                            textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
                           ),
                         ]),
-                        backgroundColor: _banVehicle
-                            ? const Color(0xFFC62828)
-                            : const Color(0xFF2E7D32),
+                        backgroundColor: _banVehicle ? const Color(0xFFC62828) : const Color(0xFF2E7D32),
                         duration: const Duration(seconds: 3),
                       ));
+                      
+                      _showViolationFollowUp(context, widget.vehicleId, _numCtrl.text.trim(), _amountCtrl.text.trim(), typeName);
                       Navigator.pop(context);
                     },
-                    child: const Text('حفظ الشكوى',
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: Text(L.get('save_complaint'),
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -652,6 +607,3 @@ class _AddViolationPageState extends State<_AddViolationPage> with DarkModeRebui
     );
   }
 }
-
-// ─────────────────────────────────────────────
-//  Add Vehicle Page

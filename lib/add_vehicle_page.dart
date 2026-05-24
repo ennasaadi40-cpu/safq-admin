@@ -16,30 +16,23 @@ class _AddVehiclePage extends StatefulWidget {
 class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_AddVehiclePage> {
   final _formKey = GlobalKey<FormState>();
 
-  // ── بيانات المالك
-  final _ownerNameCtrl  = TextEditingController(); // اسم المالك
-  final _ownerPhoneCtrl = TextEditingController(); // هاتف المالك
-  final _ownerIdCtrl    = TextEditingController(); // هوية المالك
+  final _ownerNameCtrl     = TextEditingController();
+  final _ownerPhoneCtrl    = TextEditingController();
+  final _ownerIdCtrl       = TextEditingController();
+  final _loadingExpiryCtrl = TextEditingController();
+  final _plateCtrl         = TextEditingController();
+  final _rfidCtrl          = TextEditingController();
+  final _makerCtrl         = TextEditingController();
+  final _modelCtrl         = TextEditingController();
+  final _yearCtrl          = TextEditingController();
+  final _chassisCtrl       = TextEditingController();
+  final _opLicNumCtrl      = TextEditingController();
+  final _opLicExpCtrl      = TextEditingController();
+  final _carLicExpCtrl     = TextEditingController();
+  final _insExpCtrl        = TextEditingController();
 
-  // ── بطاقة السيارة
-  final _loadingExpiryCtrl = TextEditingController(); // تاريخ انتهاء التحميل
-  final _plateCtrl      = TextEditingController(); // رقم المركبة
-  final _rfidCtrl       = TextEditingController(); // RFID Tag
-  final _makerCtrl      = TextEditingController(); // الشركة المصنعة
-  final _modelCtrl      = TextEditingController(); // طراز السيارة
-  final _yearCtrl       = TextEditingController(); // سنة الإنتاج
-  final _chassisCtrl    = TextEditingController(); // رقم الشصي
-
-  // ── بطاقة الترخيص
-  final _opLicNumCtrl   = TextEditingController(); // رقم رخصة التشغيل
-  final _opLicExpCtrl   = TextEditingController(); // انتهاء رخصة التشغيل
-  final _carLicExpCtrl  = TextEditingController(); // انتهاء الترخيص
-  final _insExpCtrl     = TextEditingController(); // انتهاء التأمين
-
-  // ── المالك والسائق والخط
   String? _selectedDriver;
   String? _selectedLine;
-
 
   List<UserModel> get _drivers => globalUsers.where((u) => u.role == 'سائق').toList();
 
@@ -47,9 +40,7 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
   void initState() {
     super.initState();
     if (widget.presetOwner != null) _ownerNameCtrl.text = widget.presetOwner!;
-    _selectedLine = widget.lineName.isNotEmpty
-        ? widget.lineName
-        : null;
+    _selectedLine = widget.lineName.isNotEmpty ? widget.lineName : null;
   }
 
   InputDecoration _dec(String hint, {IconData? icon}) => InputDecoration(
@@ -111,14 +102,14 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
           backgroundColor: const Color(0xFF2D3A5C),
           foregroundColor: Colors.white,
-          title: Text('إضافة مركبة',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+          title: Text(L.get('add_vehicle'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () => Navigator.pop(context),
@@ -130,45 +121,45 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
             padding: const EdgeInsets.all(16),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-              // ══ بطاقة معلومات السيارة ══════════════
+              // ══ معلومات المركبة ══════════════════════
               _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _sectionHeader('معلومات المركبة', const Color(0xFF00C897), Icons.directions_car_outlined),
+                _sectionHeader(L.get('vehicle_info'), const Color(0xFF00C897), Icons.directions_car_outlined),
 
-                _fieldLabel('رقم اللوحة'),
+                _fieldLabel(L.get('plate_number')),
                 TextFormField(
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _plateCtrl,
                   textDirection: TextDirection.ltr,
-                  decoration: _dec('مثال: 35-123-17', icon: Icons.tag),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'رقم المركبة مطلوب' : null,
+                  decoration: _dec(L.get('enter_plate'), icon: Icons.tag),
+                  validator: (v) => v == null || v.trim().isEmpty ? L.get('val_plate_required') : null,
                 ),
                 const SizedBox(height: 12),
 
-                _fieldLabel('وسم RFID'),
+                _fieldLabel(L.get('rfid_tag')),
                 TextFormField(
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _rfidCtrl,
                   textDirection: TextDirection.ltr,
-                  decoration: _dec('مثال: RFID-458921', icon: Icons.nfc),
+                  decoration: _dec(L.get('enter_rfid'), icon: Icons.nfc),
                 ),
                 const SizedBox(height: 12),
 
                 Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel('الشركة المصنعة'),
+                    _fieldLabel(L.get('manufacturer')),
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _makerCtrl,
-                      decoration: _dec('مثال: Toyota', icon: Icons.factory_outlined),
+                      decoration: _dec(L.get('enter_maker'), icon: Icons.factory_outlined),
                     ),
                   ])),
                   const SizedBox(width: 10),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel('الطراز'),
+                    _fieldLabel(L.get('model')),
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _modelCtrl,
-                      decoration: _dec('مثال: Hiace', icon: Icons.directions_car_outlined),
+                      decoration: _dec(L.get('enter_model'), icon: Icons.directions_car_outlined),
                     ),
                   ])),
                 ]),
@@ -176,55 +167,56 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
 
                 Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel('سنة الإنتاج'),
+                    _fieldLabel(L.get('year')),
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _yearCtrl,
                       keyboardType: TextInputType.number,
                       textDirection: TextDirection.ltr,
-                      decoration: _dec('مثال: 2020', icon: Icons.calendar_month_outlined),
+                      decoration: _dec(L.get('enter_year'), icon: Icons.calendar_month_outlined),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
                         final y = int.tryParse(v.trim());
-                        if (y == null || y < 1980 || y > DateTime.now().year + 1) return 'سنة غير صحيحة';
+                        if (y == null || y < 1980 || y > DateTime.now().year + 1)
+                          return L.get('val_year_invalid');
                         return null;
                       },
                     ),
                   ])),
                   const SizedBox(width: 10),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel('رقم الشصي'),
+                    _fieldLabel(L.get('chassis')),
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _chassisCtrl,
                       textDirection: TextDirection.ltr,
-                      decoration: _dec('رقم الشصي', icon: Icons.numbers),
+                      decoration: _dec(L.get('enter_chassis'), icon: Icons.numbers),
                     ),
                   ])),
                 ]),
               ])),
               const SizedBox(height: 12),
 
-              // ══ بطاقة ترخيص التشغيل ════════════════
+              // ══ رخصة التشغيل ════════════════════════
               _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _sectionHeader('رخصة التشغيل', const Color(0xFFFFB347), Icons.verified_outlined),
+                _sectionHeader(L.get('op_lic_num'), const Color(0xFFFFB347), Icons.verified_outlined),
 
-                _fieldLabel('رقم رخصة التشغيل'),
+                _fieldLabel(L.get('op_lic_num')),
                 TextFormField(
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _opLicNumCtrl,
                   textDirection: TextDirection.ltr,
-                  decoration: _dec('مثال: OP-2024-556', icon: Icons.numbers),
+                  decoration: _dec('OP-2024-556', icon: Icons.numbers),
                 ),
                 const SizedBox(height: 12),
 
                 Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel('انتهاء رخصة التشغيل'),
+                    _fieldLabel(L.get('op_lic_exp')),
                     TextFormField(
                       controller: _opLicExpCtrl,
                       readOnly: true,
-                      decoration: _dec('YYYY-MM-DD', icon: Icons.event_busy_outlined).copyWith(
+                      decoration: _dec(L.get('date_format'), icon: Icons.event_busy_outlined).copyWith(
                         suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF2D3A5C)),
                       ),
                       onTap: () => _pickDate(_opLicExpCtrl),
@@ -233,11 +225,11 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                   ])),
                   const SizedBox(width: 10),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel('انتهاء الترخيص'),
+                    _fieldLabel(L.get('lic_exp')),
                     TextFormField(
                       controller: _carLicExpCtrl,
                       readOnly: true,
-                      decoration: _dec('YYYY-MM-DD', icon: Icons.event_busy_outlined).copyWith(
+                      decoration: _dec(L.get('date_format'), icon: Icons.event_busy_outlined).copyWith(
                         suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF2D3A5C)),
                       ),
                       onTap: () => _pickDate(_carLicExpCtrl),
@@ -247,11 +239,11 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                 ]),
                 const SizedBox(height: 12),
 
-                _fieldLabel('انتهاء التأمين'),
+                _fieldLabel(L.get('insurance_exp')),
                 TextFormField(
                   controller: _insExpCtrl,
                   readOnly: true,
-                  decoration: _dec('YYYY-MM-DD', icon: Icons.shield_outlined).copyWith(
+                  decoration: _dec(L.get('date_format'), icon: Icons.shield_outlined).copyWith(
                     suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF2D3A5C)),
                   ),
                   onTap: () => _pickDate(_insExpCtrl),
@@ -259,17 +251,18 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                 ),
                 const SizedBox(height: 12),
 
-                _fieldLabel('انتهاء التحميل'),
+                _fieldLabel(L.get('loading_exp')),
                 TextFormField(
                   controller: _loadingExpiryCtrl,
                   readOnly: true,
-                  decoration: _dec('YYYY-MM-DD', icon: Icons.local_shipping_outlined).copyWith(
+                  decoration: _dec(L.get('date_format'), icon: Icons.local_shipping_outlined).copyWith(
                     suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF2D3A5C)),
                   ),
                   onTap: () => _pickDate(_loadingExpiryCtrl),
                   validator: (v) => validateDate(v, required: false),
                 ),
                 const SizedBox(height: 8),
+
                 // أزرار تمديد سريعة
                 Wrap(
                   spacing: 8,
@@ -287,7 +280,7 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                             : DateTime.now();
                         final newDate = base.add(Duration(days: days));
                         setState(() {
-                              _loadingExpiryCtrl.text = '${newDate.year}-${newDate.month.toString().padLeft(2,"0")}-${newDate.day.toString().padLeft(2,"0")}';
+                          _loadingExpiryCtrl.text = '${newDate.year}-${newDate.month.toString().padLeft(2,"0")}-${newDate.day.toString().padLeft(2,"0")}';
                         });
                       },
                       child: Container(
@@ -297,7 +290,7 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: const Color(0xFF4B9EFF).withValues(alpha: 0.3)),
                         ),
-                        child: Text('+$days يوم',
+                        child: Text('+$days ${L.isArabic ? "يوم" : "days"}',
                             style: const TextStyle(fontSize: 12, color: Color(0xFF4B9EFF), fontWeight: FontWeight.bold)),
                       ),
                     );
@@ -306,42 +299,46 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
               ])),
               const SizedBox(height: 12),
 
-              // ══ بطاقة المالك والسائق والخط ═════════
+              // ══ المالك والسائق والخط ════════════════
               _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _sectionHeader('المالك والسائق والخط', const Color(0xFFB47AFF), Icons.people_outlined),
+                _sectionHeader(
+                  L.isArabic ? 'المالك والسائق والخط' : 'Owner, Driver & Line',
+                  const Color(0xFFB47AFF), Icons.people_outlined),
 
-                _sectionHeader('معلومات المالك', const Color(0xFFB47AFF), Icons.badge_outlined),
+                _sectionHeader(
+                  L.isArabic ? 'معلومات المالك' : 'Owner Info',
+                  const Color(0xFFB47AFF), Icons.badge_outlined),
 
-                _fieldLabel('اسم المالك'),
+                _fieldLabel(L.get('owner_name')),
                 TextFormField(
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _ownerNameCtrl,
-                  decoration: _dec('أدخل اسم المالك', icon: Icons.person_outline),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'اسم المالك مطلوب' : null,
+                  decoration: _dec(L.get('enter_owner'), icon: Icons.person_outline),
+                  validator: (v) => v == null || v.trim().isEmpty ? L.get('val_owner_required') : null,
                 ),
                 const SizedBox(height: 12),
 
                 Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel('هاتف المالك'),
+                    _fieldLabel(L.get('owner_phone')),
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _ownerPhoneCtrl,
                       keyboardType: TextInputType.phone,
                       textDirection: TextDirection.ltr,
                       maxLength: 10,
-                      decoration: _dec('05xxxxxxxx', icon: Icons.phone_outlined),
+                      decoration: _dec(L.get('enter_phone'), icon: Icons.phone_outlined),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
                         final d = v.trim().replaceAll(RegExp(r'\D'), '');
-                        if (d.length != 10) return '10 أرقام بالضبط';
+                        if (d.length != 10) return L.get('val_phone_length');
                         return null;
                       },
                     ),
                   ])),
                   const SizedBox(width: 10),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel('هوية المالك'),
+                    _fieldLabel(L.get('owner_id')),
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _ownerIdCtrl,
@@ -351,8 +348,8 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                       decoration: _dec('xxxxxxxxx', icon: Icons.badge_outlined),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) return null;
-                        if (!RegExp(r'^\d+$').hasMatch(v.trim())) return 'أرقام فقط';
-                        if (v.trim().length != 9) return '9 أرقام بالضبط';
+                        if (!RegExp(r'^\d+$').hasMatch(v.trim())) return L.get('val_id_numbers');
+                        if (v.trim().length != 9) return L.get('val_id_length');
                         return null;
                       },
                     ),
@@ -360,17 +357,18 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                 ]),
                 const SizedBox(height: 12),
 
-                _fieldLabel('السائق'),
+                _fieldLabel(L.get('driver')),
                 _SearchableDropdown(
-                  hint: 'ابحث عن سائق',
-                  items: ['بدون سائق', ..._drivers.map((u) => u.name)],
+                  hint: L.get('choose_driver'),
+                  items: [L.get('no_driver'), ..._drivers.map((u) => u.name)],
                   selected: _selectedDriver,
-                  onSelected: (v) => setState(() => _selectedDriver = v == 'بدون سائق' ? '' : v),
-                  validator: (v) => (v == null || v.isEmpty) ? 'اختر السائق' : null,
+                  onSelected: (v) => setState(() =>
+                      _selectedDriver = v == L.get('no_driver') ? '' : v),
+                  validator: (v) => (v == null || v.isEmpty) ? L.get('val_vehicle_required') : null,
                 ),
                 const SizedBox(height: 12),
 
-                _fieldLabel('الخط'),
+                _fieldLabel(L.get('line')),
                 globalLines.isEmpty
                   ? Container(
                       padding: const EdgeInsets.all(12),
@@ -382,18 +380,19 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                       child: Row(children: [
                         const Icon(Icons.info_outline, size: 15, color: Color(0xFF4B9EFF)),
                         const SizedBox(width: 8),
-                        Text('لا توجد خطوط — ستُحفظ تحت "بدون خط"',
+                        Text(L.isArabic
+                            ? 'لا توجد خطوط — ستُحفظ تحت "بدون خط"'
+                            : 'No lines — will be saved under "No Line"',
                             style: TextStyle(fontSize: 12, color: context.textSecondary)),
                       ]),
                     )
                   : _SearchableDropdown(
-                      hint: 'اختر الخط',
+                      hint: L.get('choose_line'),
                       items: globalLines.map((l) => l.name).toList(),
                       selected: _selectedLine,
                       onSelected: (v) => setState(() => _selectedLine = v),
-                      validator: (v) => (v == null || v.isEmpty) ? 'اختر الخط' : null,
+                      validator: (v) => (v == null || v.isEmpty) ? L.get('val_line_required') : null,
                     ),
-
               ])),
 
               const SizedBox(height: 24),
@@ -407,12 +406,11 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   icon: const Icon(Icons.check_circle_outline, color: Colors.white),
-                  label: Text('حفظ',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  label: Text(L.get('save'),
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   onPressed: () {
                     if (!_formKey.currentState!.validate()) return;
 
-                    // ── فحص إذا المركبة محظورة ──────────────
                     final plateNum = _plateCtrl.text.trim();
                     bool isBanned = false;
                     for (final list in globalVehicles) {
@@ -425,17 +423,18 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                       if (isBanned) break;
                     }
                     if (isBanned) {
-                      // إرسال تنبيه لموظف الأمن
                       globalSecurityNotifications.insert(0, {
-                        'title': '🚫 مركبة محظورة حاولت التسجيل',
-                        'body': 'المركبة $plateNum محظورة ومطلوبة لدى مدير المحطة',
-                        'time': nowTime(),
-                        'type': 'banned',
+                        'title': L.isArabic ? '🚫 مركبة محظورة حاولت التسجيل' : '🚫 Banned vehicle attempted registration',
+                        'body':  L.isArabic
+                            ? 'المركبة $plateNum محظورة ومطلوبة لدى مدير المحطة'
+                            : 'Vehicle $plateNum is banned and required by the station manager',
+                        'time':  nowTime(),
+                        'type':  'banned',
                       });
                       showDialog(
                         context: context,
                         builder: (_) => Directionality(
-                          textDirection: TextDirection.rtl,
+                          textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
                           child: AlertDialog(
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             title: Row(children: [
@@ -448,10 +447,13 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                                 child: const Icon(Icons.block_rounded, color: Color(0xFFFF5A5F), size: 22),
                               ),
                               const SizedBox(width: 10),
-                              const Text('مركبة محظورة', style: TextStyle(color: Color(0xFFFF5A5F), fontWeight: FontWeight.bold)),
+                              Text(L.isArabic ? 'مركبة محظورة' : 'Banned Vehicle',
+                                  style: const TextStyle(color: Color(0xFFFF5A5F), fontWeight: FontWeight.bold)),
                             ]),
                             content: Text(
-                              'المركبة $plateNum محظورة من النظام.\n\nتم إرسال تنبيه لموظف الأمن — المركبة مطلوبة لدى مدير المحطة.',
+                              L.isArabic
+                                  ? 'المركبة $plateNum محظورة من النظام.\n\nتم إرسال تنبيه لموظف الأمن — المركبة مطلوبة لدى مدير المحطة.'
+                                  : 'Vehicle $plateNum is banned from the system.\n\nA security officer has been notified.',
                               style: const TextStyle(fontSize: 14),
                             ),
                             actions: [
@@ -461,7 +463,7 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
                                 onPressed: () => Navigator.pop(context),
-                                child: const Text('حسناً', style: TextStyle(color: Colors.white)),
+                                child: Text(L.get('ok'), style: const TextStyle(color: Colors.white)),
                               ),
                             ],
                           ),
@@ -481,8 +483,6 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                       operatingLicDate: _opLicExpCtrl.text.trim(),
                       rfidTag:          _rfidCtrl.text.trim(),
                       loadingExpiry:    _loadingExpiryCtrl.text.trim(),
-                      
-                      // ✅ الحقول المضافة
                       maker:            _makerCtrl.text.trim(),
                       model:            _modelCtrl.text.trim(),
                       year:             _yearCtrl.text.trim(),
@@ -497,52 +497,50 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                         : -1;
 
                     if (lineIndex != -1) {
-                      // أضف للخط المختار
                       final updated = LineVehicle(
-                        number: globalVehicles[lineIndex].length + 1,
-                        vehicleId: newVehicle.vehicleId,
-                        status: newVehicle.status,
-                        ownerName: newVehicle.ownerName,
-                        carLicExpiry: newVehicle.carLicExpiry,
-                        insuranceExpiry: newVehicle.insuranceExpiry,
-                        operatingLicNum: newVehicle.operatingLicNum,
+                        number:           globalVehicles[lineIndex].length + 1,
+                        vehicleId:        newVehicle.vehicleId,
+                        status:           newVehicle.status,
+                        ownerName:        newVehicle.ownerName,
+                        carLicExpiry:     newVehicle.carLicExpiry,
+                        insuranceExpiry:  newVehicle.insuranceExpiry,
+                        operatingLicNum:  newVehicle.operatingLicNum,
                         operatingLicDate: newVehicle.operatingLicDate,
-                        rfidTag: newVehicle.rfidTag,
-                        loadingExpiry: newVehicle.loadingExpiry,
-                        maker: newVehicle.maker,
-                        model: newVehicle.model,
-                        year: newVehicle.year,
-                        chassis: newVehicle.chassis,
-                        ownerPhone: newVehicle.ownerPhone,
-                        ownerId: newVehicle.ownerId,
-                        driverName: newVehicle.driverName,
+                        rfidTag:          newVehicle.rfidTag,
+                        loadingExpiry:    newVehicle.loadingExpiry,
+                        maker:            newVehicle.maker,
+                        model:            newVehicle.model,
+                        year:             newVehicle.year,
+                        chassis:          newVehicle.chassis,
+                        ownerPhone:       newVehicle.ownerPhone,
+                        ownerId:          newVehicle.ownerId,
+                        driverName:       newVehicle.driverName,
                       );
                       globalVehicles[lineIndex].add(updated);
                     } else {
-                      // بدون خط — أضف لخط افتراضي "بدون خط"
                       final noLineIdx = globalLines.indexWhere((l) => l.name == 'بدون خط');
                       if (noLineIdx == -1) {
                         globalLines.add(LineModel(name: 'بدون خط', subtitle: ''));
                         globalVehicles.add([newVehicle]);
                       } else {
                         globalVehicles[noLineIdx].add(LineVehicle(
-                          number: globalVehicles[noLineIdx].length + 1,
-                          vehicleId: newVehicle.vehicleId,
-                          status: newVehicle.status,
-                          ownerName: newVehicle.ownerName,
-                          carLicExpiry: newVehicle.carLicExpiry,
-                          insuranceExpiry: newVehicle.insuranceExpiry,
-                          operatingLicNum: newVehicle.operatingLicNum,
+                          number:           globalVehicles[noLineIdx].length + 1,
+                          vehicleId:        newVehicle.vehicleId,
+                          status:           newVehicle.status,
+                          ownerName:        newVehicle.ownerName,
+                          carLicExpiry:     newVehicle.carLicExpiry,
+                          insuranceExpiry:  newVehicle.insuranceExpiry,
+                          operatingLicNum:  newVehicle.operatingLicNum,
                           operatingLicDate: newVehicle.operatingLicDate,
-                          rfidTag: newVehicle.rfidTag,
-                          loadingExpiry: newVehicle.loadingExpiry,
-                          maker: newVehicle.maker,
-                          model: newVehicle.model,
-                          year: newVehicle.year,
-                          chassis: newVehicle.chassis,
-                          ownerPhone: newVehicle.ownerPhone,
-                          ownerId: newVehicle.ownerId,
-                          driverName: newVehicle.driverName,
+                          rfidTag:          newVehicle.rfidTag,
+                          loadingExpiry:    newVehicle.loadingExpiry,
+                          maker:            newVehicle.maker,
+                          model:            newVehicle.model,
+                          year:             newVehicle.year,
+                          chassis:          newVehicle.chassis,
+                          ownerPhone:       newVehicle.ownerPhone,
+                          ownerId:          newVehicle.ownerId,
+                          driverName:       newVehicle.driverName,
                         ));
                       }
                     }

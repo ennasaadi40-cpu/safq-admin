@@ -1,17 +1,11 @@
 part of station_app;
 
-// ════════════════════════════════════════════════════════════════
-//  API Config — غيّر BASE_URL عند ربط الـ Backend
-// ════════════════════════════════════════════════════════════════
 class _ApiConfig {
-  static const String baseUrl   = 'https://your-api.example.com/api/v1';
-  static const String adminKey  = 'your-admin-api-key';
-  static const int    timeout   = 10; // seconds
+  static const String baseUrl  = 'https://your-api.example.com/api/v1';
+  static const String adminKey = 'your-admin-api-key';
+  static const int    timeout  = 10;
 }
 
-// ════════════════════════════════════════════════════════════════
-//  نموذج بيانات الطلب
-// ════════════════════════════════════════════════════════════════
 enum RequestType   { passengers, parcel }
 enum RequestStatus { pending, accepted, inProgress, completed, cancelled }
 
@@ -130,11 +124,7 @@ class ExternalRequest {
   }
 }
 
-// ════════════════════════════════════════════════════════════════
-//  Repository — يستدعي API الحقيقي أو يرجع بيانات محلية
-// ════════════════════════════════════════════════════════════════
 class _RequestsRepository {
-  // GET /admin/requests  — جلب الطلبات للأدمن
   static Future<List<ExternalRequest>> fetchRequests() async {
     try {
       final token = await _getAdminToken();
@@ -146,24 +136,20 @@ class _RequestsRepository {
           'Content-Type': 'application/json',
         },
       ).timeout(Duration(seconds: _ApiConfig.timeout));
-
       if (res.statusCode == 200) {
         final list = jsonDecode(res.body) as List;
         return list.map((e) => ExternalRequest.fromJson(e)).toList();
       }
     } catch (_) {}
-    // fallback: البيانات المحلية
     return globalRequests;
   }
 
-  // GET /lines — جلب الخطوط المتاحة
   static Future<List<Map<String, String>>> fetchLines() async {
     try {
       final res = await http.get(
         Uri.parse('${_ApiConfig.baseUrl}/lines'),
         headers: {'Content-Type': 'application/json'},
       ).timeout(Duration(seconds: _ApiConfig.timeout));
-
       if (res.statusCode == 200) {
         final list = jsonDecode(res.body) as List;
         return list.map<Map<String, String>>((e) => {
@@ -178,9 +164,6 @@ class _RequestsRepository {
   static Future<String> _getAdminToken() async => 'mock-token';
 }
 
-// ════════════════════════════════════════════════════════════════
-//  Storage
-// ════════════════════════════════════════════════════════════════
 List<ExternalRequest> globalRequests = [];
 
 Future<void> saveRequests() async {
@@ -198,7 +181,6 @@ Future<void> loadRequests() async {
       globalRequests = list.map((e) => ExternalRequest.fromJson(e)).toList();
     } catch (_) {}
   }
-  // أضف بيانات وهمية إذا فارغ
   if (globalRequests.isEmpty) {
     globalRequests = [
       ExternalRequest(
@@ -242,9 +224,9 @@ Future<void> loadRequests() async {
   }
 }
 
-// ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════
 //  صفحة الطلبات
-// ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════
 class RequestsPage extends StatefulWidget {
   const RequestsPage({super.key});
   @override
@@ -253,18 +235,38 @@ class RequestsPage extends StatefulWidget {
 
 class _RequestsPageState extends State<RequestsPage>
     with DarkModeRebuild<RequestsPage> {
-  String _activeFilter = 'الكل';
-  bool   _loading     = false;
-  final List<String> _filters = ['الكل', 'مقبول', 'مرفوض'];
+  String _activeFilter = 'all';
+  bool   _loading      = false;
+
+  List<String> get _filters => ['all', 'accepted', 'rejected'];
+
+  String _filterLabel(String f) {
+    switch (f) {
+      case 'accepted': return L.get('req_filter_accepted');
+      case 'rejected': return L.get('req_status_cancelled');
+      default:         return L.get('all');
+    }
+  }
+
+  Color _filterAccent(String f) {
+    switch (f) {
+      case 'accepted': return const Color(0xFF00C897);
+      case 'rejected': return const Color(0xFFFF5A5F);
+      default:         return const Color(0xFF2D3A5C);
+    }
+  }
 
   List<ExternalRequest> get _allRequests => globalRequests;
 
   List<ExternalRequest> get _filtered {
     switch (_activeFilter) {
-      case 'معلق':  return _allRequests.where((r) => r.status == RequestStatus.pending).toList();
-      case 'مقبول': return _allRequests.where((r) => r.status == RequestStatus.accepted || r.status == RequestStatus.inProgress || r.status == RequestStatus.completed).toList();
-      case 'مرفوض': return _allRequests.where((r) => r.status == RequestStatus.cancelled).toList();
-      default:      return _allRequests;
+      case 'accepted': return _allRequests.where((r) =>
+          r.status == RequestStatus.accepted ||
+          r.status == RequestStatus.inProgress ||
+          r.status == RequestStatus.completed).toList();
+      case 'rejected': return _allRequests.where((r) =>
+          r.status == RequestStatus.cancelled).toList();
+      default: return _allRequests;
     }
   }
 
@@ -284,23 +286,26 @@ class _RequestsPageState extends State<RequestsPage>
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Column(children: [
 
-        // ── Header ──
+        // ── Header ──────────────────────────
         Container(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
           color: const Color(0xFF2D3A5C),
           child: Row(children: [
             Expanded(child: Row(children: [
-              const Text('الطلبات الخارجية',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(L.get('external_requests'),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
               if (_pendingCount > 0) ...[
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: const Color(0xFFFFB347), borderRadius: BorderRadius.circular(20)),
-                  child: Text('$_pendingCount جديد',
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB347),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text('$_pendingCount ${L.get('new_badge')}',
                       style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                 ),
               ],
@@ -319,32 +324,35 @@ class _RequestsPageState extends State<RequestsPage>
           ]),
         ),
 
-
-        // ── إحصائيات (طلبات) ──
+        // ── إحصائيات ────────────────────────
         Container(
           color: context.cardColor,
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
           child: Row(children: [
-            _StatBadge('الكل',   _allRequests.length, const Color(0xFF2D3A5C)),
-            _StatBadge('معلق',   _allRequests.where((r) => r.status == RequestStatus.pending).length, const Color(0xFFFFB347)),
-            _StatBadge('مقبول',  _allRequests.where((r) => r.status == RequestStatus.accepted).length, const Color(0xFF00C897)),
-            _StatBadge('مرفوض', _allRequests.where((r) => r.status == RequestStatus.cancelled).length, const Color(0xFFFF5A5F)),
+            _StatBadge(L.get('all'),
+                _allRequests.length, const Color(0xFF2D3A5C)),
+            _StatBadge(L.get('req_status_pending'),
+                _allRequests.where((r) => r.status == RequestStatus.pending).length,
+                const Color(0xFFFFB347)),
+            _StatBadge(L.get('req_status_accepted'),
+                _allRequests.where((r) => r.status == RequestStatus.accepted).length,
+                const Color(0xFF00C897)),
+            _StatBadge(L.get('req_status_cancelled'),
+                _allRequests.where((r) => r.status == RequestStatus.cancelled).length,
+                const Color(0xFFFF5A5F)),
           ]),
         ),
 
-        // ── فلاتر (طلبات) ──
+        // ── فلاتر ───────────────────────────
         Container(
           color: context.cardColor,
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            reverse: true,
+            reverse: L.isArabic,
             child: Row(children: _filters.map((f) {
-              final sel = f == _activeFilter;
-              Color accent = const Color(0xFF2D3A5C);
-              if (f == 'معلق')  accent = const Color(0xFFFFB347);
-              else if (f == 'مقبول')  accent = const Color(0xFF00C897);
-              else if (f == 'مرفوض') accent = const Color(0xFFFF5A5F);
+              final sel    = f == _activeFilter;
+              final accent = _filterAccent(f);
               return _Tap(
                 onTap: () => setState(() => _activeFilter = f),
                 child: Container(
@@ -355,7 +363,7 @@ class _RequestsPageState extends State<RequestsPage>
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: sel ? accent : context.dividerColor),
                   ),
-                  child: Text(f, style: TextStyle(
+                  child: Text(_filterLabel(f), style: TextStyle(
                       color: sel ? Colors.white : context.textSecondary,
                       fontSize: 12, fontWeight: FontWeight.w600)),
                 ),
@@ -364,7 +372,7 @@ class _RequestsPageState extends State<RequestsPage>
           ),
         ),
 
-        // ── المحتوى ──
+        // ── المحتوى ─────────────────────────
         Expanded(child: _buildRequests()),
       ]),
     );
@@ -375,7 +383,8 @@ class _RequestsPageState extends State<RequestsPage>
     if (items.isEmpty) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
       Icon(Icons.inbox_outlined, size: 60, color: Colors.grey[300]),
       const SizedBox(height: 12),
-      Text('لا توجد طلبات', style: TextStyle(color: Colors.grey[400], fontSize: 15)),
+      Text(L.get('no_requests'),
+          style: TextStyle(color: Colors.grey[400], fontSize: 15)),
     ]));
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -383,16 +392,9 @@ class _RequestsPageState extends State<RequestsPage>
       itemBuilder: (_, i) => _RequestCard(request: items[i]),
     );
   }
-
-  String _formatTime(String iso) {
-    try {
-      final dt = DateTime.parse(iso).toLocal();
-      return '${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')} - ${dt.day}/${dt.month}';
-    } catch (_) { return iso; }
-  }
 }
 
-// ── إحصائية صغيرة ──────────────────────────────
+// ── إحصائية صغيرة ──────────────────────────
 class _StatBadge extends StatelessWidget {
   final String label;
   final int    count;
@@ -405,9 +407,7 @@ class _StatBadge extends StatelessWidget {
   ]));
 }
 
-// ─────────────────────────────────────────────
-//  بطاقة الطلب
-// ─────────────────────────────────────────────
+// ── بطاقة الطلب ────────────────────────────
 class _RequestCard extends StatelessWidget {
   final ExternalRequest request;
   const _RequestCard({required this.request});
@@ -422,22 +422,29 @@ class _RequestCard extends StatelessWidget {
     }
   }
 
-  String get _statusLabel {
+  String _statusLabel() {
     switch (request.status) {
-      case RequestStatus.pending:    return 'معلق';
-      case RequestStatus.accepted:   return 'مقبول';
-      case RequestStatus.inProgress: return 'قيد التنفيذ';
-      case RequestStatus.completed:  return 'مكتمل';
-      case RequestStatus.cancelled:  return 'مرفوض';
+      case RequestStatus.pending:    return L.get('req_status_pending');
+      case RequestStatus.accepted:   return L.get('req_status_accepted');
+      case RequestStatus.inProgress: return L.get('req_status_in_progress');
+      case RequestStatus.completed:  return L.get('req_status_completed');
+      case RequestStatus.cancelled:  return L.get('req_status_cancelled');
     }
+  }
+
+  String _formatTime(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      return '${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')} - ${dt.day}/${dt.month}';
+    } catch (_) { return iso; }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isParcel   = request.type == RequestType.parcel;
-    final typeColor  = isParcel ? const Color(0xFFB47AFF) : const Color(0xFF4B9EFF);
-    final typeIcon   = isParcel ? Icons.inventory_2_outlined : Icons.people_outlined;
-    final typeLabel  = isParcel ? 'طرد' : 'ركاب';
+    final isParcel  = request.type == RequestType.parcel;
+    final typeColor = isParcel ? const Color(0xFFB47AFF) : const Color(0xFF4B9EFF);
+    final typeIcon  = isParcel ? Icons.inventory_2_outlined : Icons.people_outlined;
+    final typeLabel = isParcel ? L.get('request_type_parcel') : L.get('request_type_passengers');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -462,11 +469,14 @@ class _RequestCard extends StatelessWidget {
           child: Row(children: [
             Container(
               padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(color: typeColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(
+                  color: typeColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8)),
               child: Icon(typeIcon, size: 16, color: typeColor),
             ),
             const SizedBox(width: 8),
-            Text(typeLabel, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: typeColor)),
+            Text(typeLabel, style: TextStyle(
+                fontSize: 13, fontWeight: FontWeight.bold, color: typeColor)),
             const SizedBox(width: 8),
             Text(request.id, style: TextStyle(fontSize: 11, color: context.textSecondary)),
             const Spacer(),
@@ -481,7 +491,8 @@ class _RequestCard extends StatelessWidget {
                 Container(width: 6, height: 6,
                     decoration: BoxDecoration(color: _statusColor, shape: BoxShape.circle)),
                 const SizedBox(width: 5),
-                Text(_statusLabel, style: TextStyle(fontSize: 11, color: _statusColor, fontWeight: FontWeight.bold)),
+                Text(_statusLabel(), style: TextStyle(
+                    fontSize: 11, color: _statusColor, fontWeight: FontWeight.bold)),
               ]),
             ),
           ]),
@@ -492,17 +503,16 @@ class _RequestCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-            // المرسل
             if (request.senderName != null) ...[
               Row(children: [
                 const Icon(Icons.person_outline, size: 14, color: Color(0xFF8A93A8)),
                 const SizedBox(width: 6),
-                Text(request.senderName!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: context.textPrimary)),
+                Text(request.senderName!, style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.bold, color: context.textPrimary)),
               ]),
               const SizedBox(height: 6),
             ],
 
-            // الموقع والوجهة
             Row(children: [
               const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF00C897)),
               const SizedBox(width: 6),
@@ -517,20 +527,21 @@ class _RequestCard extends StatelessWidget {
                   style: TextStyle(fontSize: 12, color: context.textPrimary))),
             ]),
 
-            // الخط
             if (request.lineName != null) ...[
               const SizedBox(height: 4),
               Row(children: [
                 const Icon(Icons.route_outlined, size: 14, color: Color(0xFF8A93A8)),
                 const SizedBox(width: 6),
-                Text(request.lineName!, style: TextStyle(fontSize: 11, color: context.textSecondary)),
+                Text(request.lineName!,
+                    style: TextStyle(fontSize: 11, color: context.textSecondary)),
               ]),
             ],
             const SizedBox(height: 8),
 
-            // تفاصيل إضافية
             if (!isParcel && request.passengersCount != null)
-              _InfoChip(Icons.person_outline, '${request.passengersCount} راكب', const Color(0xFF4B9EFF)),
+              _InfoChip(Icons.person_outline,
+                  '${request.passengersCount} ${L.get('passenger_count')}',
+                  const Color(0xFF4B9EFF)),
             if (isParcel && request.parcelName != null)
               _InfoChip(Icons.inventory_2_outlined, request.parcelName!, const Color(0xFFB47AFF)),
             if (isParcel && request.parcelDetails != null) ...[
@@ -547,7 +558,6 @@ class _RequestCard extends StatelessWidget {
                   style: TextStyle(fontSize: 10, color: context.textSecondary)),
             ]),
 
-            // أمر الحركة
             if (request.assignedVehicleId != null) ...[
               const SizedBox(height: 10),
               Container(
@@ -558,18 +568,19 @@ class _RequestCard extends StatelessWidget {
                   border: Border.all(color: const Color(0xFF00C897).withValues(alpha: 0.2)),
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Row(children: [
-                    Icon(Icons.directions_car_rounded, size: 13, color: Color(0xFF00C897)),
-                    SizedBox(width: 6),
-                    Text('أمر الحركة', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF00C897))),
+                  Row(children: [
+                    const Icon(Icons.directions_car_rounded, size: 13, color: Color(0xFF00C897)),
+                    const SizedBox(width: 6),
+                    Text(L.get('movement_order'), style: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF00C897))),
                   ]),
                   const SizedBox(height: 6),
                   if (request.assignedVehicleId != null)
-                    _OrderDetailRow('المركبة', request.assignedVehicleId!),
+                    _OrderDetailRow(L.get('assigned_vehicle'), request.assignedVehicleId!, context),
                   if (request.assignedDriver != null)
-                    _OrderDetailRow('السائق', request.assignedDriver!),
+                    _OrderDetailRow(L.get('assigned_driver'), request.assignedDriver!, context),
                   if (request.assignedLine != null)
-                    _OrderDetailRow('الخط', request.assignedLine!),
+                    _OrderDetailRow(L.get('assigned_line'), request.assignedLine!, context),
                 ]),
               ),
             ],
@@ -583,22 +594,18 @@ class _RequestCard extends StatelessWidget {
       Row(mainAxisSize: MainAxisSize.min, children: [
         Icon(icon, size: 12, color: color),
         const SizedBox(width: 4),
-        Text(text, style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600)),
+        Text(text, style: TextStyle(
+            fontSize: 12, color: color, fontWeight: FontWeight.w600)),
         const SizedBox(width: 12),
       ]);
 
-  Widget _OrderDetailRow(String label, String value) => Builder(builder: (ctx) => Padding(
+  Widget _OrderDetailRow(String label, String value, BuildContext ctx) => Padding(
     padding: const EdgeInsets.only(bottom: 3),
     child: Row(children: [
       Text('$label: ', style: TextStyle(fontSize: 11, color: ctx.textSecondary)),
-      Expanded(child: Text(value, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: ctx.textPrimary), overflow: TextOverflow.ellipsis)),
+      Expanded(child: Text(value, style: TextStyle(
+          fontSize: 11, fontWeight: FontWeight.bold, color: ctx.textPrimary),
+          overflow: TextOverflow.ellipsis)),
     ]),
-  ));
-
-  String _formatTime(String iso) {
-    try {
-      final dt = DateTime.parse(iso).toLocal();
-      return '${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')} - ${dt.day}/${dt.month}';
-    } catch (_) { return iso; }
-  }
+  );
 }

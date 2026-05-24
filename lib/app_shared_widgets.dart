@@ -63,6 +63,7 @@ class _TapState extends State<_Tap> {
     );
   }
 }
+
 class _PlaceholderPage extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -71,7 +72,7 @@ class _PlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -88,8 +89,8 @@ class _PlaceholderPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'قريباً...',
-              style: TextStyle(fontSize: 14, color: Colors.white70),
+              L.isArabic ? 'قريباً...' : 'Coming soon...',
+              style: const TextStyle(fontSize: 14, color: Colors.white70),
             ),
           ],
         ),
@@ -97,13 +98,6 @@ class _PlaceholderPage extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────
-//  Lines Page  (واجهة الخطوط)
-// ─────────────────────────────────────────────
-
-
-/// نموذج مركبة الخط — يرث من BaseModel (id=vehicleId, status=status)
 
 class _NavItem {
   final IconData icon;
@@ -115,10 +109,11 @@ class _BottomNav extends StatelessWidget {
   final List<_NavItem> items;
   final int selectedIndex;
   final ValueChanged<int> onTap;
-  const _BottomNav(
-      {required this.items,
-      required this.selectedIndex,
-      required this.onTap});
+  const _BottomNav({
+    required this.items,
+    required this.selectedIndex,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -140,9 +135,6 @@ class _BottomNav extends StatelessWidget {
     );
   }
 }
-// ─────────────────────────────────────────────
-//  Gate Scanner Page — قراءة QR وكشف المخالفات
-// ─────────────────────────────────────────────
 
 // ─────────────────────────────────────────────
 //  Searchable Dropdown
@@ -193,7 +185,7 @@ class _SearchableDropdownState extends State<_SearchableDropdown> {
         children: [
           TextFormField(
             controller: _ctrl,
-            textDirection: TextDirection.rtl,
+            textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
             onChanged: _filter,
             onTap: () => setState(() { _showList = true; _filtered = widget.items; }),
             decoration: InputDecoration(

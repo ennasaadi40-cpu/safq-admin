@@ -15,17 +15,16 @@ class _VehicleInfoPage extends StatefulWidget {
 
 class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild<_VehicleInfoPage> {
 
-  // ── بحث عن المركبة والخط من رقم اللوحة ──────────────────
   LineVehicle get _lv {
     for (final list in globalVehicles) {
       for (final v in list) {
         if (v.vehicleId == widget.plateNumber) return v;
       }
     }
-    // fallback: مركبة وهمية بالبيانات المتوفرة
     return LineVehicle(number: 0, vehicleId: widget.plateNumber,
-        status: 'غير معروف', ownerName: widget.ownerName);
+        status: L.get('unknown'), ownerName: widget.ownerName);
   }
+
   LineModel get _line {
     for (int i = 0; i < globalLines.length; i++) {
       for (final v in globalVehicles[i]) {
@@ -43,10 +42,12 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
       return null;
     }
   }
+
   UserModel? get _owner {
     try { return globalUsers.firstWhere((u) => u.name == (_lv.ownerName) && u.role == 'مالك سيارة'); }
     catch (_) { return null; }
   }
+
   List<EventItem> get _events =>
       globalEvents.where((e) => e.vehicleId == _lv.vehicleId).toList().reversed.take(10).toList();
 
@@ -93,79 +94,78 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
         textDirection: pw.TextDirection.rtl,
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context ctx) => pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-          // Header
           pw.Container(
             width: double.infinity,
             padding: const pw.EdgeInsets.all(16),
             decoration: pw.BoxDecoration(color: PdfColors.blueGrey800, borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8))),
             child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-              pw.Text('بطاقة معلومات المركبة', style: ar(size: 18, w: pw.FontWeight.bold, color: PdfColors.white)),
+              pw.Text(L.get('vehicle_info'), style: ar(size: 18, w: pw.FontWeight.bold, color: PdfColors.white)),
               pw.SizedBox(height: 4),
-              pw.Text('محطة الحافلات المركزية — الخليل', style: ar(size: 12, color: PdfColors.grey300)),
+              pw.Text(L.get('station_name'), style: ar(size: 12, color: PdfColors.grey300)),
             ]),
           ),
           pw.SizedBox(height: 20),
 
-          // معلومات المركبة
-          pw.Text('معلومات المركبة', style: ar(size: 14, w: pw.FontWeight.bold)),
+          pw.Text(L.get('vehicle_info'), style: ar(size: 14, w: pw.FontWeight.bold)),
           pw.SizedBox(height: 8),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
             columnWidths: {0: const pw.FlexColumnWidth(2), 1: const pw.FlexColumnWidth(1)},
             children: [
-              tRow('رقم اللوحة', lv.vehicleId),
-              tRow('الحالة', lv.status),
-              tRow('اسم المالك', lv.ownerName.isNotEmpty ? lv.ownerName : '—'),
-              tRow('رقم الخط', line.name.replaceAll('→', '-')),
+              tRow(L.get('plate_number'), lv.vehicleId),
+              tRow(L.get('status'), lv.status),
+              tRow(L.get('owner_name'), lv.ownerName.isNotEmpty ? lv.ownerName : '—'),
+              tRow(L.get('line_name'), line.name.replaceAll('→', '-')),
             ],
           ),
           pw.SizedBox(height: 16),
 
-          // معلومات المالك/السائق
           if (owner != null) ...[
-            pw.Text('معلومات المالك', style: ar(size: 14, w: pw.FontWeight.bold)),
+            pw.Text(L.get('owner_info'), style: ar(size: 14, w: pw.FontWeight.bold)),
             pw.SizedBox(height: 8),
             pw.Table(
               border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
               columnWidths: {0: const pw.FlexColumnWidth(2), 1: const pw.FlexColumnWidth(1)},
               children: [
-                tRow('الاسم', owner.name),
-                tRow('رقم الهوية', owner.idNumber.isNotEmpty ? owner.idNumber : '—'),
-                tRow('رقم الهاتف', owner.phone.isNotEmpty ? owner.phone : '—'),
+                tRow(L.get('full_name'), owner.name),
+                tRow(L.get('id_number'), owner.idNumber.isNotEmpty ? owner.idNumber : '—'),
+                tRow(L.get('phone'), owner.phone.isNotEmpty ? owner.phone : '—'),
               ],
             ),
             pw.SizedBox(height: 16),
           ],
 
-          // التراخيص
-          pw.Text('التراخيص', style: ar(size: 14, w: pw.FontWeight.bold)),
+          pw.Text(L.get('operating_license'), style: ar(size: 14, w: pw.FontWeight.bold)),
           pw.SizedBox(height: 8),
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
             columnWidths: {0: const pw.FlexColumnWidth(2), 1: const pw.FlexColumnWidth(1)},
             children: [
-              tRow('رقم رخصة التشغيل', lv.operatingLicNum.isNotEmpty ? lv.operatingLicNum : '—'),
-              tRow('انتهاء رخصة السيارة', lv.carLicExpiry.isNotEmpty ? lv.carLicExpiry : '—'),
-              tRow('انتهاء التأمين', lv.insuranceExpiry.isNotEmpty ? lv.insuranceExpiry : '—'),
-              tRow('انتهاء التحميل', lv.loadingExpiry.isNotEmpty ? lv.loadingExpiry : '—'),
+              tRow(L.get('op_lic_num'), lv.operatingLicNum.isNotEmpty ? lv.operatingLicNum : '—'),
+              tRow(L.get('lic_exp'), lv.carLicExpiry.isNotEmpty ? lv.carLicExpiry : '—'),
+              tRow(L.get('insurance_exp'), lv.insuranceExpiry.isNotEmpty ? lv.insuranceExpiry : '—'),
+              tRow(L.get('loading_exp'), lv.loadingExpiry.isNotEmpty ? lv.loadingExpiry : '—'),
             ],
           ),
 
           pw.Spacer(),
           pw.Divider(color: PdfColors.grey400),
           pw.SizedBox(height: 4),
-          pw.Text('تم الإنشاء تلقائياً — نظام إدارة محطة الخليل', style: ar(size: 9, color: PdfColors.grey500)),
+          pw.Text(L.get('app_title'), style: ar(size: 9, color: PdfColors.grey500)),
         ]),
       ));
 
       final bytes = await pdf.save();
       final dir = await getApplicationDocumentsDirectory();
-      final file = File('\${dir.path}/vehicle_\${lv.vehicleId}.pdf');
+      final file = File('${dir.path}/vehicle_${lv.vehicleId}.pdf');
       await file.writeAsBytes(bytes);
       await OpenFile.open(file.path);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في الطباعة: \$e'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('${L.get('error')}: $e'),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 
@@ -173,18 +173,15 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
   Widget build(BuildContext context) {
     final lv   = _lv;
     final line = _line;
-    final carNum      = lv.vehicleId;
-    final rfidTag     = lv.rfidTag.isNotEmpty ? lv.rfidTag : '—';
-    final opLicNum    = lv.operatingLicNum.isNotEmpty ? lv.operatingLicNum : '—';
+    final carNum   = lv.vehicleId;
+    final opLicNum = lv.operatingLicNum.isNotEmpty ? lv.operatingLicNum : '—';
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         body: CustomScrollView(
           slivers: [
-
-            // ══ Hero Header ════════════════════════════
             SliverAppBar(
               expandedHeight: 200,
               pinned: true,
@@ -196,13 +193,12 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
               actions: [
                 IconButton(
                   icon: const Icon(Icons.print_rounded, color: Colors.white),
-                  tooltip: 'طباعة',
+                  tooltip: L.get('print'),
                   onPressed: () => _printVehicle(lv, line),
                 ),
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(fit: StackFit.expand, children: [
-                  // gradient background
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -212,7 +208,6 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                       ),
                     ),
                   ),
-                  // decorative circle
                   Positioned(
                     left: -40, top: -40,
                     child: Container(
@@ -233,7 +228,6 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                       ),
                     ),
                   ),
-                  // content
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
                     child: Column(
@@ -241,7 +235,6 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          // status badge
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                             decoration: BoxDecoration(
@@ -259,9 +252,8 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                                   color: _statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
                             ]),
                           ),
-                          // vehicle number
                           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                            Text('رقم المركبة', style: TextStyle(
+                            Text(L.get('plate_number'), style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.6), fontSize: 11)),
                             Text(carNum, style: const TextStyle(
                                 color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold,
@@ -278,95 +270,89 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
               ),
             ),
 
-            // ══ Body cards ══════════════════════════════
             SliverPadding(
               padding: const EdgeInsets.all(16),
               sliver: SliverList(delegate: SliverChildListDelegate([
 
-                // بطاقة السائق
                 _VInfoCard(
                   icon: Icons.person_outlined,
-                  title: 'السائق',
+                  title: L.get('driver'),
                   accentColor: const Color(0xFF4B9EFF),
                   rows: [
-                    _Row('الاسم',               lv.driverName.isNotEmpty ? lv.driverName : 'بدون سائق'),
-                    _Row('رقم الهوية',           _driver?.idNumber   ?? '—'),
-                    _Row('رقم الهاتف',           _driver?.phone      ?? '—'),
-                    _Row('رقم رخصة القيادة',     _driver?.licenseNum ?? '—'),
-                    _Row('درجة الرخصة',          _driver?.licenseGrade.isNotEmpty == true ? _driver!.licenseGrade : 'نقل عام'),
+                    _Row(L.get('full_name'),      lv.driverName.isNotEmpty ? lv.driverName : L.get('no_driver')),
+                    _Row(L.get('id_number'),       _driver?.idNumber   ?? '—'),
+                    _Row(L.get('phone'),           _driver?.phone      ?? '—'),
+                    _Row(L.get('license_num'),     _driver?.licenseNum ?? '—'),
+                    _Row(L.get('license_grade'),   _driver?.licenseGrade.isNotEmpty == true ? _driver!.licenseGrade : '—'),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                // بطاقة المركبة
                 _VInfoCard(
                   icon: Icons.directions_car_outlined,
-                  title: 'المركبة',
+                  title: L.get('vehicle_info'),
                   accentColor: const Color(0xFF00C897),
                   rows: [
-                    _Row('رقم اللوحة',        lv.vehicleId),
-                    _Row('وسم RFID',          lv.rfidTag.isNotEmpty ? lv.rfidTag : '—'),
-                    _Row('الشركة المصنعة',    lv.maker.isNotEmpty ? lv.maker : '—'),
-                    _Row('الطراز',            lv.model.isNotEmpty ? lv.model : '—'),
-                    _Row('سنة الإنتاج',       lv.year.isNotEmpty ? lv.year : '—'),
-                    _Row('رقم الشاصي',        lv.chassis.isNotEmpty ? lv.chassis : '—'),
-                    _Row('اسم المحطة',       'محطة الحافلات المركزية — الخليل'),
+                    _Row(L.get('plate_number'),  lv.vehicleId),
+                    _Row(L.get('rfid_tag'),      lv.rfidTag.isNotEmpty ? lv.rfidTag : '—'),
+                    _Row(L.get('manufacturer'),  lv.maker.isNotEmpty ? lv.maker : '—'),
+                    _Row(L.get('model'),         lv.model.isNotEmpty ? lv.model : '—'),
+                    _Row(L.get('year'),          lv.year.isNotEmpty ? lv.year : '—'),
+                    _Row(L.get('chassis'),       lv.chassis.isNotEmpty ? lv.chassis : '—'),
+                    _Row(L.get('station_name'),  L.get('station_name')),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                // بطاقة الترخيص
                 _VInfoCard(
                   icon: Icons.verified_outlined,
-                  title: 'رخصة التشغيل',
+                  title: L.get('operating_license'),
                   accentColor: const Color(0xFFFFB347),
                   rows: [
-                    _Row('رقم ترخيص التشغيل',   lv.operatingLicNum.isNotEmpty ? lv.operatingLicNum : opLicNum),
-                    _Row('تاريخ ترخيص التشغيل', lv.operatingLicDate.isNotEmpty ? lv.operatingLicDate : '—'),
-                    _Row('انتهاء رخصة السيارة',  lv.carLicExpiry.isNotEmpty ? lv.carLicExpiry : '—',
-                        badge: expiryBadge('الرخصة', lv.carLicExpiry.isNotEmpty ? lv.carLicExpiry : '—')),
-                    _Row('انتهاء التأمين',        lv.insuranceExpiry.isNotEmpty ? lv.insuranceExpiry : '—',
-                        badge: expiryBadge('التأمين', lv.insuranceExpiry.isNotEmpty ? lv.insuranceExpiry : '—')),
-                    _Row('انتهاء التحميل', lv.loadingExpiry.isNotEmpty ? lv.loadingExpiry : '—',
-                        badge: expiryBadge('التحميل', lv.loadingExpiry)),
+                    _Row(L.get('op_lic_num'),    lv.operatingLicNum.isNotEmpty ? lv.operatingLicNum : opLicNum),
+                    _Row(L.get('op_lic_exp'),    lv.operatingLicDate.isNotEmpty ? lv.operatingLicDate : '—'),
+                    _Row(L.get('lic_exp'),       lv.carLicExpiry.isNotEmpty ? lv.carLicExpiry : '—',
+                        badge: expiryBadge(L.get('lic_exp'), lv.carLicExpiry.isNotEmpty ? lv.carLicExpiry : '—')),
+                    _Row(L.get('insurance_exp'), lv.insuranceExpiry.isNotEmpty ? lv.insuranceExpiry : '—',
+                        badge: expiryBadge(L.get('insurance_exp'), lv.insuranceExpiry.isNotEmpty ? lv.insuranceExpiry : '—')),
+                    _Row(L.get('loading_exp'),   lv.loadingExpiry.isNotEmpty ? lv.loadingExpiry : '—',
+                        badge: expiryBadge(L.get('loading_exp'), lv.loadingExpiry)),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                // بطاقة المالك
                 _VInfoCard(
                   icon: Icons.badge_outlined,
-                  title: 'المالك',
+                  title: L.get('owner_info'),
                   accentColor: const Color(0xFFB47AFF),
                   rows: [
-                    _Row('اسم المالك', lv.ownerName.isNotEmpty ? lv.ownerName : '—'),
-                    _Row('رقم الهاتف', lv.ownerPhone.isNotEmpty ? lv.ownerPhone : '—'),
-                    _Row('رقم الهوية', lv.ownerId.isNotEmpty ? lv.ownerId : '—'),
+                    _Row(L.get('owner_name'),  lv.ownerName.isNotEmpty ? lv.ownerName : '—'),
+                    _Row(L.get('owner_phone'), lv.ownerPhone.isNotEmpty ? lv.ownerPhone : '—'),
+                    _Row(L.get('owner_id'),    lv.ownerId.isNotEmpty ? lv.ownerId : '—'),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                // بطاقة الخط
                 _VInfoCard(
                   icon: Icons.route_outlined,
-                  title: 'الخط',
+                  title: L.get('line_info'),
                   accentColor: const Color(0xFFFF5A5F),
                   rows: [
-                    _Row('اسم الخط',    line.name),
-                    _Row('رقم الخط', line.gateId.isNotEmpty ? line.gateId : '—'),
-                    _Row('اسم المحطة', 'محطة الخليل المركزية'),
-                    _Row('بوابة الدخول', () {
+                    _Row(L.get('line_name'),    line.name),
+                    _Row(L.get('line_number'),  line.gateId.isNotEmpty ? line.gateId : '—'),
+                    _Row(L.get('station_name'), L.get('station_name')),
+                    _Row(L.get('entry_gate'), () {
                       if (line.entryGateId.isEmpty) return '—';
                       final gate = globalGates.cast<GateModel?>().firstWhere(
-                        (g) => g?.id == line.entryGateId, 
+                        (g) => g?.id == line.entryGateId,
                         orElse: () => null,
                       );
                       return gate?.label ?? line.entryGateId;
                     }()),
-                    _Row('بوابة الخروج', () {
+                    _Row(L.get('exit_gate'), () {
                       if (line.exitGateId.isEmpty) return '—';
                       final gate = globalGates.cast<GateModel?>().firstWhere(
-                        (g) => g?.id == line.exitGateId, 
+                        (g) => g?.id == line.exitGateId,
                         orElse: () => null,
                       );
                       return gate?.label ?? line.exitGateId;
@@ -374,11 +360,9 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                   ],
                 ),
 
-
-                                // آخر الأحداث
                 if (_events.isNotEmpty) ...[
                   const SizedBox(height: 20),
-                  Text('آخر الأحداث',
+                  Text(L.get('event_stats'),
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimary)),
                   const SizedBox(height: 8),
                   Container(
@@ -400,7 +384,7 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
                           border: isLast ? null : Border(
-                            bottom: BorderSide(color: context.dividerColor, width: 0.5)),
+                              bottom: BorderSide(color: context.dividerColor, width: 0.5)),
                         ),
                         child: Row(children: [
                           Container(
@@ -414,8 +398,8 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                           const SizedBox(width: 12),
                           Expanded(child: Text(
                             ev.type == EventType.violation
-                                ? 'شكوى: ${ev.violationNote ?? ""}'
-                                : '${ev.type == EventType.entry ? "دخول" : "خروج"} — ${ev.location}',
+                                ? '${L.get('violation')}: ${ev.violationNote ?? ""}'
+                                : '${ev.type == EventType.entry ? L.get('entry') : L.get('exit')} — ${ev.location}',
                             style: TextStyle(fontSize: 13, color: context.textPrimary),
                           )),
                           Text(ev.time, style: TextStyle(fontSize: 10, color: context.textSecondary)),
@@ -434,7 +418,6 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
   }
 }
 
-// ── Card widget للمركبة ───────────────────────
 class _VInfoCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -451,7 +434,6 @@ class _VInfoCard extends StatelessWidget {
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // header
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -469,11 +451,9 @@ class _VInfoCard extends StatelessWidget {
               child: Icon(icon, size: 16, color: accentColor),
             ),
             const SizedBox(width: 10),
-            Text(title, style: TextStyle(
-                fontWeight: FontWeight.bold, fontSize: 14, color: accentColor)),
+            Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: accentColor)),
           ]),
         ),
-        // rows
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(children: rows.asMap().entries.map((e) {
@@ -481,13 +461,12 @@ class _VInfoCard extends StatelessWidget {
             return Padding(
               padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('• ', style: TextStyle(color: accentColor, fontSize: 14,
-                    fontWeight: FontWeight.bold)),
+                Text('• ', style: TextStyle(color: accentColor, fontSize: 14, fontWeight: FontWeight.bold)),
                 Expanded(child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     RichText(
-                      textDirection: TextDirection.rtl,
+                      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
                       text: TextSpan(
                         style: TextStyle(fontSize: 13, fontFamily: 'Tajawal', color: context.textPrimary),
                         children: [
@@ -515,6 +494,6 @@ class _VInfoCard extends StatelessWidget {
 
 class _Row {
   final String label, value;
-  final Widget? badge; // شارة انتهاء صلاحية اختيارية
+  final Widget? badge;
   const _Row(this.label, this.value, {this.badge});
 }

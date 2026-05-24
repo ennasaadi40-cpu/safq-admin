@@ -9,9 +9,9 @@ class _NotificationsPage extends StatefulWidget {
 class _NotificationsPageState extends State<_NotificationsPage> with DarkModeRebuild<_NotificationsPage> {
   List<Map<String, String>> get _notifs {
     return globalEvents.map((e) => {
-      'title': e.type == EventType.entry ? 'مركبة دخلت'
-             : e.type == EventType.exit  ? 'مركبة خرجت'
-             : 'مخالفة جديدة',
+      'title': e.type == EventType.entry ? L.get('entry')
+             : e.type == EventType.exit  ? L.get('exit')
+             : L.get('violation'),
       'body': '${e.vehicleId} • ${e.location}',
       'time': e.time,
     }).toList();
@@ -20,7 +20,7 @@ class _NotificationsPageState extends State<_NotificationsPage> with DarkModeReb
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
@@ -41,7 +41,7 @@ class _NotificationsPageState extends State<_NotificationsPage> with DarkModeReb
                 children: [
                   Icon(Icons.notifications_off_outlined, size: 60, color: Colors.grey[300]),
                   const SizedBox(height: 12),
-                  Text('No notifications yet',
+                  Text(L.get('no_events'),
                       style: TextStyle(color: Colors.grey[400], fontSize: 15)),
                 ],
               ))
@@ -66,7 +66,6 @@ class _NotificationsPageState extends State<_NotificationsPage> with DarkModeReb
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                     child: Row(
                       children: [
-                        // Bell icon
                         Container(
                           width: 40, height: 40,
                           decoration: BoxDecoration(
@@ -91,7 +90,6 @@ class _NotificationsPageState extends State<_NotificationsPage> with DarkModeReb
                             size: 20),
                         ),
                         const SizedBox(width: 14),
-                        // Title + body
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

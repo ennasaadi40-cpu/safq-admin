@@ -16,16 +16,17 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
   late final _licenseNumCtrl   = TextEditingController(text: widget.user.licenseNum);
   late final _licenseExpiryCtrl = TextEditingController(text: widget.user.licenseExpiry);
   late String? _selectedRole   = widget.user.role;
-  late String _currentPassword  = widget.user.password; // يتحدث عند تغيير كلمة المرور
+  late String _currentPassword  = widget.user.password;
   late String? _selectedStatus = widget.user.status;
   late bool _isActive          = widget.user.isActive;
+  
   // FocusNodes
   final _feName = FocusNode(); final _feUsername = FocusNode();
   final _fePassword = FocusNode(); final _fePhone = FocusNode();
   final _feId = FocusNode(); final _feLicNum = FocusNode();
 
-  static const List<String> _roles     = ['سائق', 'موظف أمن', 'مشرف خط'];
-  static const List<String> _statuses  = ['نشط', 'معلق', 'محظور'];
+  List<String> get _roles => [L.get('driver'), L.get('security'), L.get('supervisor')];
+  List<String> get _statuses => [L.get('active'), L.get('suspended'), L.get('banned')];
 
   @override
   void dispose() {
@@ -64,12 +65,18 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
 
   void _save() {
     if (_formKey.currentState!.validate()) {
+      // نحول الدور المترجم لقيمة عربية ثابتة للتخزين
+      String roleStorage = _selectedRole ?? '';
+      if (_selectedRole == L.get('driver'))     roleStorage = 'سائق';
+      if (_selectedRole == L.get('security'))   roleStorage = 'موظف أمن';
+      if (_selectedRole == L.get('supervisor')) roleStorage = 'مشرف خط';
+
       final updated = UserModel(
         name:          _nameCtrl.text.trim(),
         username:      _usernameCtrl.text.trim().isNotEmpty
                            ? _usernameCtrl.text.trim()
                            : widget.user.username,
-        role:          _selectedRole!,
+        role:          roleStorage,
         status:        _isActive ? 'نشط' : (_selectedStatus ?? 'معلق'),
         phone:         _phoneCtrl.text.trim(),
         idNumber:      _idCtrl.text.trim(),
@@ -82,8 +89,8 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
         content: Row(children: [
           const Icon(Icons.check_circle, color: Colors.white, size: 20),
           const SizedBox(width: 8),
-          Expanded(child: Text('تم تعديل المستخدم بنجاح ✓',
-              textDirection: TextDirection.rtl,
+          Expanded(child: Text(L.get('user_saved'),
+              textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
         ]),
         backgroundColor: const Color(0xFF2E7D32),
@@ -93,8 +100,8 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
         margin: const EdgeInsets.all(16),
       ));
       logEvent(EventItem(
-        vehicleId: 'مستخدم: ${updated.name}',
-        location: 'تعديل بيانات المستخدم — ${updated.role}',
+        vehicleId: '${L.get('user')}: ${updated.name}',
+        location: '${L.get('edit_user')} — ${updated.role}',
         time: nowTime(),
         type: EventType.exit,
       ));
@@ -109,7 +116,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
     String? error;
 
     showDialog(context: context, builder: (_) => StatefulBuilder(builder: (ctx, setDlg) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(children: [
@@ -117,11 +124,11 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
             decoration: BoxDecoration(color: const Color(0xFF2D3A5C).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
             child: const Icon(Icons.lock_outline, color: Color(0xFF2D3A5C), size: 20)),
           const SizedBox(width: 10),
-          Expanded(child: Text('تغيير كلمة مرور ${widget.user.name}',
+          Expanded(child: Text(L.get('change_password'),
               style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold, fontSize: 15))),
         ]),
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('كلمة المرور الجديدة', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+          Text(L.get('new_password'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
           const SizedBox(height: 6),
           TextField(controller: newPassCtrl, obscureText: !showNew, textDirection: TextDirection.ltr,
             decoration: InputDecoration(
@@ -131,7 +138,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                 onPressed: () => setDlg(() => showNew = !showNew)),
             )),
           const SizedBox(height: 12),
-          Text('تأكيد كلمة المرور', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+          Text(L.get('confirm_password'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
           const SizedBox(height: 6),
           TextField(controller: confPassCtrl, obscureText: !showConf, textDirection: TextDirection.ltr,
             decoration: InputDecoration(
@@ -147,13 +154,13 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context),
-              child: Text('إلغاء', style: TextStyle(color: ctx.textSecondary))),
+              child: Text(L.get('cancel'), style: TextStyle(color: ctx.textSecondary))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2D3A5C),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             onPressed: () {
-              if (newPassCtrl.text.isEmpty) { setDlg(() => error = 'أدخل كلمة المرور'); return; }
-              if (newPassCtrl.text != confPassCtrl.text) { setDlg(() => error = 'كلمتا المرور غير متطابقتين'); return; }
+              if (newPassCtrl.text.isEmpty) { setDlg(() => error = L.get('enter_password')); return; }
+              if (newPassCtrl.text != confPassCtrl.text) { setDlg(() => error = L.get('passwords_not_match')); return; }
               final idx = globalUsers.indexWhere((u) => u.name == widget.user.name);
               if (idx != -1) {
                 globalUsers[idx] = UserModel(
@@ -171,12 +178,12 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
               }
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: const Text('تم تغيير كلمة المرور ✓', textDirection: TextDirection.rtl),
+                content: Text(L.get('password_changed'), textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr),
                 backgroundColor: const Color(0xFF2E7D32), behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), margin: const EdgeInsets.all(16),
               ));
             },
-            child: const Text('حفظ', style: TextStyle(color: Colors.white)),
+            child: Text(L.get('save'), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -186,7 +193,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
@@ -196,8 +203,8 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text('تعديل المستخدم',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          title: Text(L.get('edit_user'),
+              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
         ),
         body: Form(
           key: _formKey,
@@ -207,24 +214,22 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // الاسم الكامل
-                _label('الاسم الكامل'),
+                _label(L.get('full_name')),
                 TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                  onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _nameCtrl,
-                  decoration: _inputDec('ادخل اسم المستخدم كاملاً'),
+                  decoration: _inputDec(L.get('enter_name')),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'الاسم مطلوب';
+                    if (v == null || v.trim().isEmpty) return L.get('val_name_required');
                     final name = v.trim();
-                    if (name.length < 3) return '3 أحرف على الأقل';
-                    // لا أرقام أو رموز
+                    if (name.length < 3) return L.get('val_name_short');
                     if (!RegExp(r'^[\u0600-\u06FFa-zA-Z\s]+$').hasMatch(name))
-                      return 'الاسم يجب أن يحتوي على أحرف فقط';
-                    // لا تكرار — إلا إذا هو نفس الاسم الأصلي
+                      return L.get('val_name_letters');
                     final original = widget.user.name.trim().toLowerCase();
                     if (name.toLowerCase() != original) {
                       final exists = globalUsers.any((u) =>
                           u.name.trim().toLowerCase() == name.toLowerCase());
-                      if (exists) return 'هذا الاسم مسجل مسبقاً';
+                      if (exists) return L.get('val_name_exists');
                     }
                     return null;
                   },
@@ -232,78 +237,77 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                 const SizedBox(height: 16),
 
                 // Username
-                _label('اسم المستخدم'),
+                _label(L.get('username')),
                 TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                  onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _usernameCtrl,
                   textDirection: TextDirection.ltr,
                   decoration: _inputDec(widget.user.username.isNotEmpty
-                      ? widget.user.username : 'Enter username'),
+                      ? widget.user.username : L.get('enter_username')),
                 ),
                 const SizedBox(height: 16),
 
-
                 // Role
-                _label('الدور'),
+                _label(L.get('role')),
                 _SearchableDropdown(
-                  hint: 'اختر الدور',
+                  hint: L.get('choose_role'),
                   items: _roles,
                   selected: _selectedRole,
                   onSelected: (v) => setState(() => _selectedRole = v),
-                  validator: (v) => v == null ? 'اختر الدور' : null,
+                  validator: (v) => v == null ? L.get('val_role_required') : null,
                 ),
                 const SizedBox(height: 16),
 
                 // رقم الهاتف
-                _label('رقم الهاتف'),
+                _label(L.get('phone')),
                 TextFormField(
-                          controller: _phoneCtrl,
+                  controller: _phoneCtrl,
                   textDirection: TextDirection.ltr,
                   keyboardType: TextInputType.phone,
                   maxLength: 10,
-                  decoration: _inputDec('05xxxxxxxx — 10 أرقام'),
+                  decoration: _inputDec(L.get('enter_phone')),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return null; // اختياري
+                    if (v == null || v.trim().isEmpty) return null;
                     final digits = v.trim().replaceAll(RegExp(r'\D'), '');
-                    if (digits.length != 10) return 'رقم الهاتف يجب أن يكون 10 أرقام بالظبط';
+                    if (digits.length != 10) return L.get('val_phone_length');
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
 
                 // رقم الهوية
-                _label('رقم الهوية'),
+                _label(L.get('id_number')),
                 TextFormField(
-                          controller: _idCtrl,
+                  controller: _idCtrl,
                   textDirection: TextDirection.ltr,
                   keyboardType: TextInputType.number,
                   maxLength: 9,
-                  decoration: _inputDec('ادخل رقم الهوية (9 أرقام)'),
+                  decoration: _inputDec(L.get('enter_id')),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'رقم الهوية مطلوب';
-                    if (!RegExp(r'^\d+$').hasMatch(v.trim())) return 'أرقام فقط — لا حروف أو رموز';
-                    if (v.trim().length != 9) return 'رقم الهوية يجب أن يكون 9 أرقام بالظبط';
+                    if (v == null || v.trim().isEmpty) return L.get('val_id_required');
+                    if (!RegExp(r'^\d+$').hasMatch(v.trim())) return L.get('val_id_numbers');
+                    if (v.trim().length != 9) return L.get('val_id_length');
                     return null;
                   },
                 ),
 
                 // حقول الرخصة — للسائق فقط
-                if (_selectedRole == 'سائق') ...[
+                if (_selectedRole == L.get('driver')) ...[
                   const SizedBox(height: 16),
-                  _label('رقم الرخصة'),
+                  _label(L.get('license_num')),
                   TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                    onEditingComplete: () => FocusScope.of(context).nextFocus(),
                     controller: _licenseNumCtrl,
                     textDirection: TextDirection.ltr,
-                    decoration: _inputDec('ادخل رقم الرخصة'),
+                    decoration: _inputDec(L.get('enter_license')),
                   ),
                   const SizedBox(height: 16),
-                  _label('تاريخ انتهاء الرخصة'),
+                  _label(L.get('license_expiry')),
                   TextFormField(
-         onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                    onEditingComplete: () => FocusScope.of(context).nextFocus(),
                     controller: _licenseExpiryCtrl,
                     textDirection: TextDirection.ltr,
-                    decoration: _inputDec('YYYY-MM-DD').copyWith(
+                    decoration: _inputDec(L.get('date_format')).copyWith(
                       suffixIcon: IconButton(
                         icon: const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey),
                         onPressed: () async {
@@ -336,7 +340,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('الحساب مفعّل', style: TextStyle(fontSize: 14, color: context.textPrimary)),
+                      Text(L.get('account_active'), style: TextStyle(fontSize: 14, color: context.textPrimary)),
                       Switch(
                         value: _isActive,
                         onChanged: (v) => setState(() => _isActive = v),
@@ -359,8 +363,8 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       elevation: 0,
                     ),
-                    child: const Text('حفظ المستخدم',
-                        style: TextStyle(color: Colors.white,
+                    child: Text(L.get('save_user'),
+                        style: const TextStyle(color: Colors.white,
                             fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),

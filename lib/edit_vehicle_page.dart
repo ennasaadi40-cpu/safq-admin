@@ -111,14 +111,14 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
           backgroundColor: const Color(0xFF2D3A5C),
           foregroundColor: Colors.white,
           title: Text(L.get('edit_vehicle'),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () => Navigator.pop(context),
@@ -132,24 +132,24 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
 
               // ══ معلومات السيارة ════════════════════
               _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _sectionHeader('معلومات المركبة', const Color(0xFF00C897), Icons.directions_car_outlined),
+                _sectionHeader(L.get('vehicle_info'), const Color(0xFF00C897), Icons.directions_car_outlined),
 
-                _fieldLabel('رقم المركبة *'),
+                _fieldLabel('${L.get('plate_number')} *'),
                 TextFormField(
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _plateCtrl,
                   textDirection: TextDirection.ltr,
-                  decoration: _dec('مثال: 35-123-17', icon: Icons.tag),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'رقم المركبة مطلوب' : null,
+                  decoration: _dec(L.get('enter_plate'), icon: Icons.tag),
+                  validator: (v) => v == null || v.trim().isEmpty ? L.get('val_plate_required') : null,
                 ),
                 const SizedBox(height: 12),
 
-                _fieldLabel('وسم RFID'),
+                _fieldLabel(L.get('rfid_tag')),
                 TextFormField(
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _rfidCtrl,
                   textDirection: TextDirection.ltr,
-                  decoration: _dec('مثال: RFID-458921', icon: Icons.nfc),
+                  decoration: _dec(L.get('enter_rfid'), icon: Icons.nfc),
                 ),
                 const SizedBox(height: 12),
 
@@ -159,7 +159,7 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _makerCtrl,
-                      decoration: _dec('مثال: Toyota', icon: Icons.factory_outlined),
+                      decoration: _dec(L.get('enter_maker'), icon: Icons.factory_outlined),
                     ),
                   ])),
                   const SizedBox(width: 10),
@@ -168,7 +168,7 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _modelCtrl,
-                      decoration: _dec('مثال: Hiace', icon: Icons.directions_car_outlined),
+                      decoration: _dec(L.get('enter_model'), icon: Icons.directions_car_outlined),
                     ),
                   ])),
                 ]),
@@ -182,7 +182,7 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                       controller: _yearCtrl,
                       keyboardType: TextInputType.number,
                       textDirection: TextDirection.ltr,
-                      decoration: _dec('مثال: 2020', icon: Icons.calendar_month_outlined),
+                      decoration: _dec(L.get('enter_year'), icon: Icons.calendar_month_outlined),
                     ),
                   ])),
                   const SizedBox(width: 10),
@@ -192,7 +192,7 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _chassisCtrl,
                       textDirection: TextDirection.ltr,
-                      decoration: _dec('رقم الشصي', icon: Icons.numbers),
+                      decoration: _dec(L.get('enter_chassis'), icon: Icons.numbers),
                     ),
                   ])),
                 ]),
@@ -201,14 +201,14 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
 
               // ══ ترخيص التشغيل ══════════════════════
               _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _sectionHeader('رخصة التشغيل', const Color(0xFFFFB347), Icons.verified_outlined),
+                _sectionHeader(L.get('operating_license'), const Color(0xFFFFB347), Icons.verified_outlined),
 
                 _fieldLabel(L.get('op_lic_num')),
                 TextFormField(
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _opLicNumCtrl,
                   textDirection: TextDirection.ltr,
-                  decoration: _dec('مثال: OP-2024-556', icon: Icons.numbers),
+                  decoration: _dec(L.get('enter_op_lic'), icon: Icons.numbers),
                 ),
                 const SizedBox(height: 12),
 
@@ -217,7 +217,7 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                     _fieldLabel(L.get('op_lic_exp')),
                     TextFormField(
                       controller: _opLicExpCtrl, readOnly: true,
-                      decoration: _dec('YYYY-MM-DD', icon: Icons.event_busy_outlined).copyWith(
+                      decoration: _dec(L.get('date_format'), icon: Icons.event_busy_outlined).copyWith(
                         suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF2D3A5C)),
                       ),
                       onTap: () => _pickDate(_opLicExpCtrl),
@@ -229,7 +229,7 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                     _fieldLabel(L.get('lic_exp')),
                     TextFormField(
                       controller: _carLicExpCtrl, readOnly: true,
-                      decoration: _dec('YYYY-MM-DD', icon: Icons.event_busy_outlined).copyWith(
+                      decoration: _dec(L.get('date_format'), icon: Icons.event_busy_outlined).copyWith(
                         suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF2D3A5C)),
                       ),
                       onTap: () => _pickDate(_carLicExpCtrl),
@@ -242,7 +242,7 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                 _fieldLabel(L.get('insurance_exp')),
                 TextFormField(
                   controller: _insExpCtrl, readOnly: true,
-                  decoration: _dec('YYYY-MM-DD', icon: Icons.shield_outlined).copyWith(
+                  decoration: _dec(L.get('date_format'), icon: Icons.shield_outlined).copyWith(
                     suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF2D3A5C)),
                   ),
                   onTap: () => _pickDate(_insExpCtrl),
@@ -253,7 +253,7 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                 _fieldLabel(L.get('loading_exp')),
                 TextFormField(
                   controller: _loadingExpiryCtrl, readOnly: true,
-                  decoration: _dec('YYYY-MM-DD', icon: Icons.local_shipping_outlined).copyWith(
+                  decoration: _dec(L.get('date_format'), icon: Icons.local_shipping_outlined).copyWith(
                     suffixIcon: const Icon(Icons.calendar_today, size: 16, color: Color(0xFF2D3A5C)),
                   ),
                   onTap: () => _pickDate(_loadingExpiryCtrl),
@@ -264,61 +264,61 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
 
               // ══ المالك والسائق والخط ═══════════════
               _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                _sectionHeader('معلومات المالك', const Color(0xFFB47AFF), Icons.badge_outlined),
+                _sectionHeader(L.get('owner_info'), const Color(0xFFB47AFF), Icons.badge_outlined),
 
-                _fieldLabel('اسم المالك *'),
+                _fieldLabel('${L.get('owner_name')} *'),
                 TextFormField(
                   onEditingComplete: () => FocusScope.of(context).nextFocus(),
                   controller: _ownerNameCtrl,
-                  decoration: _dec('أدخل اسم المالك', icon: Icons.person_outline),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'اسم المالك مطلوب' : null,
+                  decoration: _dec(L.get('enter_owner'), icon: Icons.person_outline),
+                  validator: (v) => v == null || v.trim().isEmpty ? L.get('val_owner_required') : null,
                 ),
                 const SizedBox(height: 12),
 
                 Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel(L.get('phone')),
+                    _fieldLabel(L.get('owner_phone')),
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _ownerPhoneCtrl,
                       keyboardType: TextInputType.phone,
                       textDirection: TextDirection.ltr,
-                      decoration: _dec('05xxxxxxxx', icon: Icons.phone_outlined),
+                      decoration: _dec(L.get('enter_owner_phone'), icon: Icons.phone_outlined),
                     ),
                   ])),
                   const SizedBox(width: 10),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    _fieldLabel(L.get('id_number')),
+                    _fieldLabel(L.get('owner_id')),
                     TextFormField(
                       onEditingComplete: () => FocusScope.of(context).nextFocus(),
                       controller: _ownerIdCtrl,
                       keyboardType: TextInputType.number,
                       textDirection: TextDirection.ltr,
-                      decoration: _dec('xxxxxxxxx', icon: Icons.badge_outlined),
+                      decoration: _dec(L.get('enter_owner_id'), icon: Icons.badge_outlined),
                     ),
                   ])),
                 ]),
                 const SizedBox(height: 12),
 
-                _sectionHeader('السائق والخط', const Color(0xFF4B9EFF), Icons.people_outlined),
+                _sectionHeader(L.get('driver_and_line'), const Color(0xFF4B9EFF), Icons.people_outlined),
 
-                _fieldLabel('السائق *'),
+                _fieldLabel('${L.get('driver')} *'),
                 _SearchableDropdown(
-                  hint: 'ابحث عن سائق',
+                  hint: L.get('choose_driver'),
                   items: _drivers.map((u) => u.name).toList(),
                   selected: _selectedDriver,
                   onSelected: (v) => setState(() => _selectedDriver = v),
-                  validator: (v) => (v == null || v.isEmpty) ? 'اختر السائق' : null,
+                  validator: (v) => (v == null || v.isEmpty) ? L.get('driver_required') : null,
                 ),
                 const SizedBox(height: 12),
 
-                _fieldLabel('الخط *'),
+                _fieldLabel('${L.get('line')} *'),
                 _SearchableDropdown(
-                  hint: 'اختر الخط',
+                  hint: L.get('choose_line'),
                   items: _lineNames,
                   selected: _selectedLine,
                   onSelected: (v) => setState(() => _selectedLine = v),
-                  validator: (v) => (v == null || v.isEmpty) ? 'اختر الخط' : null,
+                  validator: (v) => (v == null || v.isEmpty) ? L.get('val_line_required') : null,
                 ),
               ])),
 
@@ -333,8 +333,8 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   icon: const Icon(Icons.check_circle_outline, color: Colors.white),
-                  label: Text('حفظ التعديلات',
-                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  label: Text(L.get('save_changes'),
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   onPressed: () {
                     if (!_formKey.currentState!.validate()) return;
                     // تحديث المركبة في globalVehicles

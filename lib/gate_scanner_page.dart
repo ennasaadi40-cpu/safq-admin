@@ -25,7 +25,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
     if (globalGates.isNotEmpty) _selectedGate = globalGates.first;
   }
 
-  String get _gateLabel => _selectedGate?.label ?? 'غير محددة';
+  String get _gateLabel => _selectedGate?.label ?? L.get('not_specified');
   bool   get _isEntry   => _selectedGate?.type == 'مدخل';
 
   void _scan(String code) {
@@ -47,10 +47,10 @@ class _GateScannerPageState extends State<_GateScannerPage>
 
     if (vehicle == null) {
       _result = _ScanResult.unknown;
-      _resultTitle = 'مركبة غير مسجلة!';
-      _resultSub   = 'لا توجد مركبة بالرقم "$q" في النظام';
+      _resultTitle = L.get('vehicle_not_registered');
+      _resultSub = L.get('no_vehicle_with_number').replaceAll('\$q', q);
       _foundVehicle = null; _foundLine = null;
-      _autoVio(q, 'دخول مركبة غير مسجلة — رقم: $q');
+      _autoVio(q, '${L.get('attempt_entry_unregistered')} $q');
       setState(() {}); return;
     }
 
@@ -58,16 +58,17 @@ class _GateScannerPageState extends State<_GateScannerPage>
 
     if (vehicle.status == 'محظورة' || vehicle.status == 'موقوفة') {
       _result = _ScanResult.banned;
-      _resultTitle = 'مركبة موقوفة!';
-      _resultSub   = '\${vehicle.vehicleId} — \${line!.name}\nالحالة: \${vehicle.status}';
-      _autoVio(vehicle.vehicleId, 'محاولة دخول بمركبة موقوفة');
+      _resultTitle = L.get('vehicle_banned');
+      _resultSub   = '${vehicle.vehicleId} — ${line!.name}\n${L.get('status')}: ${vehicle.status}';
+      _autoVio(vehicle.vehicleId, L.get('attempt_entry_banned'));
       setState(() {}); return;
     }
 
     if (_selectedGate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('اختر بوابة أولاً', textDirection: TextDirection.rtl),
-        backgroundColor: Color(0xFFFF5A5F),
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(L.get('select_gate_first'), 
+            textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr),
+        backgroundColor: const Color(0xFFFF5A5F),
       ));
       setState(() {}); return;
     }
@@ -85,27 +86,27 @@ class _GateScannerPageState extends State<_GateScannerPage>
       }
       if (loadingExpired) {
         _result = _ScanResult.banned;
-        _resultTitle = 'انتهت صلاحية التحميل!';
-        _resultSub   = '\${vehicle.vehicleId} — \${line.name}\n'
-            '\${expiry.isEmpty ? "تاريخ التحميل غير محدد" : "انتهى في: \$expiry"}';
+        _resultTitle = L.get('loading_expired');
+        _resultSub   = '${vehicle.vehicleId} — ${line?.name ?? ''}\n...';
+            '${expiry.isEmpty ? L.get('loading_date_not_set') : "${L.get('expired_on')} $expiry"}';
         globalSecurityNotifications.insert(0, {
-          'title': '🚫 انتهاء صلاحية التحميل',
-          'body': 'المركبة \${vehicle.vehicleId} حاولت الدخول وتاريخ تحميلها منتهي\${expiry.isNotEmpty ? ": \$expiry" : ""}',
+          'title': '🚫 ${L.get('loading_expired_notif')}',
+          'body': '${L.get('vehicle_tried_entry').replaceAll('\$vid', vehicle.vehicleId)}${expiry.isNotEmpty ? ": $expiry" : ""}',
           'time': nowTime(),
           'type': 'loading_expired',
           'role': 'security',
         });
-        _autoVio(vehicle.vehicleId, 'محاولة دخول بتاريخ تحميل منتهي');
+        _autoVio(vehicle.vehicleId, L.get('attempt_entry_expired'));
         setState(() {}); return;
       }
     }
 
     _result = _ScanResult.ok;
-    _resultTitle = _isEntry ? 'دخول مسموح ✓' : 'خروج مسموح ✓';
-    _resultSub   = '\${vehicle.vehicleId} — \${line.name}\n\$_gateLabel';
+    _resultTitle = _isEntry ? L.get('entry_allowed') : L.get('exit_allowed');
+    _resultSub   = '${vehicle.vehicleId} — ${line?.name ?? ''}\n$_gateLabel';
     logEvent(EventItem(
       vehicleId: vehicle.vehicleId,
-      location: '\${line.name} — \$_gateLabel',
+      location: '${line?.name ?? ''} — $_gateLabel',
       time: nowTime(),
       type: _isEntry ? EventType.entry : EventType.exit,
     ));
@@ -169,18 +170,18 @@ class _GateScannerPageState extends State<_GateScannerPage>
       location: _gateLabel,
       time: nowTime(),
       type: EventType.violation,
-      violationNote: isBanned ? 'رفع الحظر عن المركبة' : 'حظر المركبة من الدخول',
+      violationNote: isBanned ? L.get('lift_ban_vehicle') : L.get('ban_vehicle_manually'),
     ));
     setState(() {
-      _resultTitle = isBanned ? 'تم رفع الحظر ✓' : 'تم حظر المركبة ✗';
-      _resultSub   = '$vid — ${isBanned ? "مسموح لها الآن" : "ممنوعة من الدخول"}';
+      _resultTitle = isBanned ? L.get('ban_lifted') : L.get('vehicle_banned_now');
+      _resultSub   = '$vid — ${isBanned ? L.get('now_allowed') : L.get('not_allowed')}';
     });
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Row(children: [
         Icon(isBanned ? Icons.check_circle : Icons.block_rounded, color: Colors.white, size: 18),
         const SizedBox(width: 8),
-        Text(isBanned ? 'تم رفع الحظر عن $vid' : 'تم حظر المركبة $vid',
-            textDirection: TextDirection.rtl),
+        Text(isBanned ? '${L.get('ban_lifted_for')} $vid' : '${L.get('vehicle_banned_for')} $vid',
+            textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr),
       ]),
       backgroundColor: isBanned ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
       behavior: SnackBarBehavior.floating,
@@ -201,7 +202,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (ctx, setDlg) => Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
           child: AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             title: Row(children: [
@@ -214,7 +215,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                 child: const Icon(Icons.sensor_door_outlined, color: Color(0xFF4B9EFF), size: 20),
               ),
               const SizedBox(width: 10),
-              Text('إضافة بوابة جديدة', style: TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(L.get('add_new_gate'), style: TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
             ]),
             content: Column(mainAxisSize: MainAxisSize.min, children: [
               // رقم الطابق
@@ -223,8 +224,8 @@ class _GateScannerPageState extends State<_GateScannerPage>
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
-                  labelText: 'رقم الطابق',
-                  hintText: 'مثال: 1',
+                  labelText: L.get('floor_number'),
+                  hintText: L.get('floor_example'),
                   prefixIcon: const Icon(Icons.layers_outlined, size: 18, color: Color(0xFF4B9EFF)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4B9EFF), width: 1.5)),
@@ -246,7 +247,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.login_rounded, size: 15, color: gateType == 'مدخل' ? const Color(0xFF00C897) : Colors.grey),
                       const SizedBox(width: 5),
-                      Text('مدخل', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: gateType == 'مدخل' ? const Color(0xFF00C897) : Colors.grey)),
+                      Text(L.get('entrance'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: gateType == 'مدخل' ? const Color(0xFF00C897) : Colors.grey)),
                     ]),
                   ),
                 )),
@@ -264,7 +265,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.logout_rounded, size: 15, color: gateType == 'مخرج' ? const Color(0xFFFF5A5F) : Colors.grey),
                       const SizedBox(width: 5),
-                      Text('مخرج', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: gateType == 'مخرج' ? const Color(0xFFFF5A5F) : Colors.grey)),
+                      Text(L.get('exit_gate'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: gateType == 'مخرج' ? const Color(0xFFFF5A5F) : Colors.grey)),
                     ]),
                   ),
                 )),
@@ -275,8 +276,8 @@ class _GateScannerPageState extends State<_GateScannerPage>
                 controller: numberCtrl,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: 'رقم البوابة',
-                  hintText: 'مثال: 1',
+                  labelText: L.get('gate_number'),
+                  hintText: L.get('gate_num_example'),
                   prefixIcon: const Icon(Icons.sensor_door_outlined, size: 18, color: Color(0xFF4B9EFF)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4B9EFF), width: 1.5)),
@@ -290,7 +291,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                 textDirection: TextDirection.ltr,
                 decoration: InputDecoration(
                   labelText: 'IP Address',
-                  hintText: 'مثال: 192.168.1.10',
+                  hintText: L.get('ip_example'),
                   prefixIcon: const Icon(Icons.lan_outlined, size: 18, color: Color(0xFF4B9EFF)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4B9EFF), width: 1.5)),
@@ -300,7 +301,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('إلغاء', style: TextStyle(color: ctx.textSecondary)),
+                child: Text(L.get('cancel'), style: TextStyle(color: ctx.textSecondary)),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -312,7 +313,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                   final number = numberCtrl.text.trim();
                   if (floor.isEmpty || number.isEmpty) return;
                   final newGate = GateModel(
-                    id:     '\${DateTime.now().millisecondsSinceEpoch}',
+                    id:     '${DateTime.now().millisecondsSinceEpoch}',
                     floor:  floor,
                     type:   gateType,
                     number: number,
@@ -321,14 +322,15 @@ class _GateScannerPageState extends State<_GateScannerPage>
                   autoSave();
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('تمت إضافة \${newGate.label}', textDirection: TextDirection.rtl),
+                    content: Text('${L.get('gate_added')} ${newGate.label}', 
+                        textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr),
                     backgroundColor: const Color(0xFF4B9EFF),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     margin: const EdgeInsets.all(16),
                   ));
                 },
-                child: const Text('إضافة', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(L.get('add'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -337,23 +339,22 @@ class _GateScannerPageState extends State<_GateScannerPage>
     );
   }
 
-
-    @override
+  @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
           backgroundColor: const Color(0xFF2D3A5C),
           foregroundColor: Colors.white,
           automaticallyImplyLeading: false,
-          title: const Text('فحص البوابة',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+          title: Text(L.get('gate_scanner'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
           actions: [
             IconButton(
               icon: const Icon(Icons.add_circle_outline_rounded, color: Colors.white),
-              tooltip: 'إضافة بوابة',
+              tooltip: L.get('add_gate'),
               onPressed: () => _addGateDialog(context),
             ),
           ],
@@ -364,7 +365,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
 
             // ── اختيار البوابة ───────────────────────
             _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              _secHeader('اختيار البوابة', Icons.sensor_door_outlined, const Color(0xFF4B9EFF)),
+              _secHeader(L.get('select_gate'), Icons.sensor_door_outlined, const Color(0xFF4B9EFF)),
               const SizedBox(height: 14),
 
               // قائمة البوابات الديناميكية
@@ -380,7 +381,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                     const Icon(Icons.warning_amber_rounded, color: Color(0xFFFFB347), size: 18),
                     const SizedBox(width: 8),
                     Expanded(child: Text(
-                      'لا توجد بوابات مضافة — اطلب من الأدمن إضافة بوابات من الإعدادات',
+                      L.get('no_gates_added'),
                       style: TextStyle(fontSize: 12, color: context.textSecondary),
                     )),
                   ]),
@@ -405,7 +406,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                             child: Row(children: [
                               Icon(g.type == 'مدخل' ? Icons.login_rounded : Icons.logout_rounded, size: 16, color: selected ? Colors.white : color),
                               const SizedBox(width: 8),
-                              Text('طابق ${g.floor} — ${g.type} ${g.number}',
+                              Text('${L.get('floor')} ${g.floor} — ${g.type == 'مدخل' ? L.get('entrance') : L.get('exit_gate')} ${g.number}',
                                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: selected ? Colors.white : context.textPrimary)),
                             ]),
                           ),
@@ -443,7 +444,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                   child: Row(children: [
                     const Icon(Icons.check_circle_rounded, color: Color(0xFF00C897), size: 16),
                     const SizedBox(width: 8),
-                    Text('البوابة المحددة: ', style: TextStyle(fontSize: 13, color: context.textSecondary)),
+                    Text('${L.get('selected_gate')} ', style: TextStyle(fontSize: 13, color: context.textSecondary)),
                     Text(_selectedGate!.label,
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF2D3A5C))),
                   ]),
@@ -454,17 +455,17 @@ class _GateScannerPageState extends State<_GateScannerPage>
 
             // ── حقل القراءة ─────────────────────────
             _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              _secHeader('قراءة QR / RFID', Icons.qr_code_scanner_rounded, const Color(0xFFB47AFF)),
+              _secHeader(L.get('read_qr_rfid'), Icons.qr_code_scanner_rounded, const Color(0xFFB47AFF)),
               const SizedBox(height: 12),
               Row(children: [
                 Expanded(child: TextField(
-                         controller: _qrCtrl,
+                  controller: _qrCtrl,
                   textDirection: TextDirection.ltr,
                   textInputAction: TextInputAction.search,
                   onSubmitted: _scan,
                   onEditingComplete: () => _scan(_qrCtrl.text),
                   decoration: InputDecoration(
-                    hintText: 'أدخل رقم اللوحة أو RFID...',
+                    hintText: L.get('enter_plate_or_rfid'),
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
                     filled: true, fillColor: context.bgColor,
                     prefixIcon: const Icon(Icons.nfc_rounded, color: Color(0xFFB47AFF), size: 20),
@@ -533,7 +534,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                       Icon(Icons.info_outline_rounded, size: 14,
                           color: context.textSecondary),
                       const SizedBox(width: 6),
-                      Text('تفاصيل المركبة والموقع',
+                      Text(L.get('vehicle_details'),
                           style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold,
                               color: context.textSecondary)),
                     ]),
@@ -545,34 +546,34 @@ class _GateScannerPageState extends State<_GateScannerPage>
                         border: Border.all(color: context.dividerColor),
                       ),
                       child: Column(children: [
-                        _infoRow(Icons.directions_car_rounded, 'رقم اللوحة',
+                        _infoRow(Icons.directions_car_rounded, L.get('plate_number'),
                             _foundVehicle!.vehicleId, const Color(0xFF4B9EFF)),
                         _infoDivider(),
-                        _infoRow(Icons.route_outlined, 'الخط',
+                        _infoRow(Icons.route_outlined, L.get('line'),
                             _foundLine!.name, const Color(0xFF00C897)),
                         _infoDivider(),
                         _infoRow(Icons.sensor_door_outlined,
-                            _isEntry ? 'بوابة الدخول' : 'بوابة الخروج',
+                            _isEntry ? L.get('entry_gate') : L.get('exit_gate'),
                             _isEntry
                               ? (globalGates.where((g) => g.id == _foundLine!.entryGateId).isNotEmpty
                                   ? globalGates.firstWhere((g) => g.id == _foundLine!.entryGateId).label
-                                  : _foundLine!.gateId.isNotEmpty ? 'بوابة ${_foundLine!.gateId}' : 'غير محدد')
+                                  : _foundLine!.gateId.isNotEmpty ? '${L.get('gate_scanner')} ${_foundLine!.gateId}' : L.get('not_specified'))
                               : (globalGates.where((g) => g.id == _foundLine!.exitGateId).isNotEmpty
                                   ? globalGates.firstWhere((g) => g.id == _foundLine!.exitGateId).label
-                                  : 'غير محدد'),
+                                  : L.get('not_specified')),
                             _isEntry ? const Color(0xFF00C897) : const Color(0xFFFF5A5F)),
                         _infoDivider(),
                         _infoRow(Icons.format_list_numbered_rounded,
-                            'رقم المركبة في الخط',
+                            L.get('vehicle_number_in_line'),
                             '#${_foundVehicle!.number}',
                             const Color(0xFFB47AFF)),
                         if (_foundVehicle!.ownerName.isNotEmpty) ...{
                           _infoDivider(),
-                          _infoRow(Icons.person_outline_rounded, 'المالك',
+                          _infoRow(Icons.person_outline_rounded, L.get('owner'),
                               _foundVehicle!.ownerName, const Color(0xFF4B9EFF)),
                         },
                         _infoDivider(),
-                        _infoRow(Icons.circle_outlined, 'الحالة',
+                        _infoRow(Icons.circle_outlined, L.get('status'),
                             _foundVehicle!.status,
                             _foundVehicle!.status == 'في الانتظار'
                                 ? const Color(0xFF00C897)
@@ -596,7 +597,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                       child: Row(children: [
                         Icon(Icons.warning_amber_rounded, size: 14, color: _rc),
                         const SizedBox(width: 8),
-                        Expanded(child: Text('تم تسجيل مخالفة تلقائية في النظام',
+                        Expanded(child: Text(L.get('auto_violation'),
                             style: TextStyle(
                                 fontSize: 12, color: _rc, fontWeight: FontWeight.w600))),
                       ]),
@@ -612,7 +613,6 @@ class _GateScannerPageState extends State<_GateScannerPage>
     );
   }
 
-
   void _editGateDialog(BuildContext context, GateModel gate) {
     final floorCtrl  = TextEditingController(text: gate.floor);
     final numberCtrl = TextEditingController(text: gate.number);
@@ -622,7 +622,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (ctx, setDlg) => Directionality(
-          textDirection: TextDirection.rtl,
+          textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
           child: AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             title: Row(children: [
@@ -630,11 +630,11 @@ class _GateScannerPageState extends State<_GateScannerPage>
                 decoration: BoxDecoration(color: const Color(0xFF4B9EFF).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                 child: const Icon(Icons.edit_outlined, color: Color(0xFF4B9EFF), size: 20)),
               const SizedBox(width: 10),
-              Text('تعديل البوابة', style: TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(L.get('edit_gate'), style: TextStyle(color: ctx.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
             ]),
             content: Column(mainAxisSize: MainAxisSize.min, children: [
               TextField(controller: floorCtrl, keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'رقم الطابق',
+                decoration: InputDecoration(labelText: L.get('floor_number'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4B9EFF), width: 1.5)))),
               const SizedBox(height: 12),
@@ -649,7 +649,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.login_rounded, size: 15, color: gateType == 'مدخل' ? const Color(0xFF00C897) : Colors.grey),
                       const SizedBox(width: 5),
-                      Text('مدخل', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: gateType == 'مدخل' ? const Color(0xFF00C897) : Colors.grey)),
+                      Text(L.get('entrance'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: gateType == 'مدخل' ? const Color(0xFF00C897) : Colors.grey)),
                     ])))),
                 const SizedBox(width: 8),
                 Expanded(child: _Tap(onTap: () => setDlg(() => gateType = 'مخرج'),
@@ -662,12 +662,12 @@ class _GateScannerPageState extends State<_GateScannerPage>
                     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.logout_rounded, size: 15, color: gateType == 'مخرج' ? const Color(0xFFFF5A5F) : Colors.grey),
                       const SizedBox(width: 5),
-                      Text('مخرج', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: gateType == 'مخرج' ? const Color(0xFFFF5A5F) : Colors.grey)),
+                      Text(L.get('exit_gate'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: gateType == 'مخرج' ? const Color(0xFFFF5A5F) : Colors.grey)),
                     ])))),
               ]),
               const SizedBox(height: 12),
               TextField(controller: numberCtrl, keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'رقم البوابة',
+                decoration: InputDecoration(labelText: L.get('gate_number'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4B9EFF), width: 1.5)))),
               const SizedBox(height: 12),
@@ -677,7 +677,7 @@ class _GateScannerPageState extends State<_GateScannerPage>
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF4B9EFF), width: 1.5)))),
             ]),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text('إلغاء', style: TextStyle(color: ctx.textSecondary))),
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(L.get('cancel'), style: TextStyle(color: ctx.textSecondary))),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2D3A5C), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 onPressed: () {
@@ -689,9 +689,11 @@ class _GateScannerPageState extends State<_GateScannerPage>
                     autoSave();
                   }
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تحديث البوابة ✓', textDirection: TextDirection.rtl), backgroundColor: Color(0xFF00C897)));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(L.get('gate_updated'), textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr), 
+                      backgroundColor: const Color(0xFF00C897)));
                 },
-                child: const Text('حفظ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
+                child: Text(L.get('save'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))),
             ],
           ),
         ),
@@ -701,13 +703,13 @@ class _GateScannerPageState extends State<_GateScannerPage>
 
   void _deleteGateConfirm(BuildContext context, GateModel gate) {
     showDialog(context: context, builder: (_) => Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('حذف البوابة', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('هل تريد حذف: \${gate.label}؟'),
+        title: Text(L.get('delete_gate'), style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: Text('${L.get('delete_gate_confirm')} ${gate.label}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(L.get('cancel'))),
           TextButton(
             onPressed: () {
               setState(() {
@@ -716,9 +718,11 @@ class _GateScannerPageState extends State<_GateScannerPage>
               });
               autoSave();
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حذف البوابة', textDirection: TextDirection.rtl), backgroundColor: Color(0xFFFF5A5F)));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(L.get('gate_deleted'), textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr), 
+                  backgroundColor: const Color(0xFFFF5A5F)));
             },
-            child: const Text('حذف', style: TextStyle(color: Color(0xFFFF5A5F), fontWeight: FontWeight.bold))),
+            child: Text(L.get('delete'), style: const TextStyle(color: Color(0xFFFF5A5F), fontWeight: FontWeight.bold))),
         ],
       ),
     ));
@@ -850,14 +854,14 @@ class _ManualBanSectionState extends State<_ManualBanSection>
       location: globalLines[li].name,
       time: nowTime(),
       type: EventType.violation,
-      violationNote: isBanned ? 'رفع الحظر عن المركبة' : 'حظر المركبة يدوياً',
+      violationNote: isBanned ? L.get('lift_ban_vehicle') : L.get('ban_vehicle_manually'),
     ));
     setState(() {});
     widget.onChanged();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
-        isBanned ? 'تم رفع الحظر عن ${v.vehicleId}' : 'تم حظر المركبة ${v.vehicleId}',
-        textDirection: TextDirection.rtl,
+        isBanned ? '${L.get('ban_lifted_for')} ${v.vehicleId}' : '${L.get('vehicle_banned_for')} ${v.vehicleId}',
+        textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       ),
       backgroundColor: isBanned ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
       behavior: SnackBarBehavior.floating,
@@ -890,9 +894,9 @@ class _ManualBanSectionState extends State<_ManualBanSection>
               child: const Icon(Icons.block_rounded, size: 15, color: Color(0xFFFF5A5F)),
             ),
             const SizedBox(width: 8),
-            Text('منع/رفع حظر مركبة',
-                style: TextStyle(fontWeight: FontWeight.bold,
-                    fontSize: 14, color: const Color(0xFFFF5A5F))),
+            Text(L.get('manual_ban_unban'),
+                style: const TextStyle(fontWeight: FontWeight.bold,
+                    fontSize: 14, color: Color(0xFFFF5A5F))),
             const Spacer(),
             // عدد المحظورات
             Builder(builder: (ctx) {
@@ -905,7 +909,7 @@ class _ManualBanSectionState extends State<_ManualBanSection>
                   color: const Color(0xFFFF5A5F).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text('$banned محظورة',
+                child: Text('$banned ${L.get('banned_count')}',
                     style: const TextStyle(fontSize: 11, color: Color(0xFFFF5A5F),
                         fontWeight: FontWeight.bold)),
               );
@@ -917,11 +921,11 @@ class _ManualBanSectionState extends State<_ManualBanSection>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: TextField(
-             controller: _searchCtrl,
-            textDirection: TextDirection.rtl,
+            controller: _searchCtrl,
+            textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
             onChanged: (v) => setState(() => _query = v),
             decoration: InputDecoration(
-              hintText: 'ابحث عن مركبة بالرقم أو المالك...',
+              hintText: L.get('search_vehicle'),
               hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
               filled: true, fillColor: context.bgColor,
               prefixIcon: const Icon(Icons.search_rounded,
@@ -948,7 +952,7 @@ class _ManualBanSectionState extends State<_ManualBanSection>
           if (results.isEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
-              child: Text('لا توجد نتائج',
+              child: Text(L.get('no_results'),
                   style: TextStyle(fontSize: 13, color: context.textSecondary)),
             )
           else
@@ -1013,7 +1017,7 @@ class _ManualBanSectionState extends State<_ManualBanSection>
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            isBanned ? 'رفع الحظر' : 'حظر',
+                            isBanned ? L.get('lift_ban') : L.get('ban'),
                             style: const TextStyle(fontSize: 12,
                                 color: Colors.white, fontWeight: FontWeight.bold),
                           ),
@@ -1027,7 +1031,7 @@ class _ManualBanSectionState extends State<_ManualBanSection>
         } else
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
-            child: Text('ابحث عن مركبة لمنعها أو رفع الحظر عنها',
+            child: Text(L.get('search_to_ban'),
                 style: TextStyle(fontSize: 12, color: context.textSecondary)),
           ),
         if (_query.isEmpty) const SizedBox(height: 0),

@@ -4,6 +4,7 @@
 
 library station_app;
 
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ import 'package:open_file/open_file.dart';
 
 // ── Logic ──────────────────────────────────────────────────────
 part 'logic.dart';
-part 'Localization · dart';
+part 'localization.dart';
 
 // ── Shared UI Widgets ──────────────────────────────────────────
 part 'app_shared_widgets.dart';
@@ -32,6 +33,7 @@ part 'dashboard_widgets.dart';
 
 // ── Pages ──────────────────────────────────────────────────────
 part 'login_page.dart';
+part 'forgot_password_pages.dart';
 part 'admin_dashboard.dart';
 part 'users_page.dart';
 part 'user_info_page.dart';
@@ -106,3 +108,5 @@ void main() async {
 
   runApp(const StationApp());
 }
+
+

@@ -10,7 +10,7 @@ class _ViolationsPageState extends State<ViolationsPage>
     with DarkModeRebuild<ViolationsPage>, SearchFilterMixin<Map<String, String>> {
   final _searchCtrl = TextEditingController();
 
-  @override List<String> get filterOptions => ['الكل', 'تم التعامل معها', 'لم يتم التعامل معها', 'المحظورة'];
+  @override List<String> get filterOptions => [L.get('all'), L.get('fees_paid'), L.get('fees_unpaid'), L.get('banned')];
 
   @override
   bool itemMatchesSearch(Map<String, String> v, String q) {
@@ -23,7 +23,7 @@ class _ViolationsPageState extends State<ViolationsPage>
 
   @override
   bool itemMatchesFilter(Map<String, String> v, String f) {
-    if (f == 'المحظورة') {
+    if (f == L.get('banned')) {
       for (final list in globalVehicles) {
         for (final lv in list) {
           if (lv.vehicleId == v['vehicle'] && lv.status == 'محظورة') return true;
@@ -31,7 +31,9 @@ class _ViolationsPageState extends State<ViolationsPage>
       }
       return false;
     }
-    if (f == 'الكل') return v['status'] != 'تم التعامل معها';
+    if (f == L.get('all')) return v['status'] != 'تم التعامل معها';
+    if (f == L.get('fees_paid'))   return v['status'] == 'تم التعامل معها';
+    if (f == L.get('fees_unpaid')) return v['status'] == 'لم يتم التعامل معها';
     return v['status'] == f;
   }
 
@@ -64,15 +66,15 @@ class _ViolationsPageState extends State<ViolationsPage>
       autoSave();
     });
   }
+
   List<Map<String, String>> get _filtered {
     final all = _violations;
-    if (activeFilter == 'الكل') return all.where((v) => v['status'] != 'تم التعامل معها').toList();
-    if (activeFilter == 'المحظورة') return all.where((v) => itemMatchesFilter(v, 'المحظورة')).toList();
-    return all.where((v) => v['status'] == activeFilter).toList();
+    if (activeFilter == L.get('all')) return all.where((v) => v['status'] != 'تم التعامل معها').toList();
+    if (activeFilter == L.get('banned')) return all.where((v) => itemMatchesFilter(v, L.get('banned'))).toList();
+    if (activeFilter == L.get('fees_paid'))   return all.where((v) => v['status'] == 'تم التعامل معها').toList();
+    if (activeFilter == L.get('fees_unpaid')) return all.where((v) => v['status'] == 'لم يتم التعامل معها').toList();
+    return all;
   }
-
-  Color _statusColor(String s) => s == 'تم التعامل معها' ? const Color(0xFF2E7D32) : const Color(0xFFC62828);
-  Color _statusBg(String s)    => s == 'تم التعامل معها' ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE);
 
   Future<void> _printViolations(BuildContext context, List<Map<String, String>> items) async {
     try {
@@ -99,20 +101,17 @@ class _ViolationsPageState extends State<ViolationsPage>
         textDirection: pw.TextDirection.rtl,
         margin: const pw.EdgeInsets.all(28),
         build: (pw.Context ctx) => pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-          // Header
           pw.Container(
             width: double.infinity,
             padding: const pw.EdgeInsets.all(14),
             decoration: pw.BoxDecoration(color: PdfColors.blueGrey800, borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8))),
             child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
-              pw.Text('تقرير الشكاوى / الشكاوى', style: ar(size: 16, w: pw.FontWeight.bold, color: PdfColors.white)),
+              pw.Text(L.get('violation_report'), style: ar(size: 16, w: pw.FontWeight.bold, color: PdfColors.white)),
               pw.SizedBox(height: 4),
-              pw.Text('محطة الحافلات المركزية — الخليل', style: ar(size: 11, color: PdfColors.grey300)),
+              pw.Text(L.get('station_name'), style: ar(size: 11, color: PdfColors.grey300)),
             ]),
           ),
           pw.SizedBox(height: 16),
-
-          // الجدول
           pw.Table(
             border: pw.TableBorder.all(color: PdfColors.grey300, width: 0.5),
             columnWidths: {
@@ -123,18 +122,16 @@ class _ViolationsPageState extends State<ViolationsPage>
               4: const pw.FlexColumnWidth(1.5),
             },
             children: [
-              // رأس الجدول
               pw.TableRow(
                 decoration: const pw.BoxDecoration(color: PdfColors.blueGrey100),
                 children: [
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('الرقم', textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('الشكوى', textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('المركبة', textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('العقوبة', textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('الحالة', textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('complaint_number'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('complaint_type'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('vehicle'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('violation_amount'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('status'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
                 ],
               ),
-              // البيانات
               ...items.map((v) => pw.TableRow(children: [
                 pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['id'] ?? '', textDirection: pw.TextDirection.rtl, style: ar())),
                 pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['name'] ?? '', textDirection: pw.TextDirection.rtl, style: ar())),
@@ -144,14 +141,13 @@ class _ViolationsPageState extends State<ViolationsPage>
               ])),
             ],
           ),
-
           pw.Spacer(),
           pw.Divider(color: PdfColors.grey400),
           pw.SizedBox(height: 4),
-          pw.Text("إجمالي: ${items.length} شكوى   |   تم التعامل: ${items.where((v) => v['status'] == 'تم التعامل معها').length}   |   لم يتم: ${items.where((v) => v['status'] != 'تم التعامل معها').length}",
+          pw.Text('${items.length} ${L.get('violations')}   |   ${L.get('fees_paid')}: ${items.where((v) => v['status'] == 'تم التعامل معها').length}   |   ${L.get('fees_unpaid')}: ${items.where((v) => v['status'] != 'تم التعامل معها').length}',
               textDirection: pw.TextDirection.rtl, style: ar(size: 10, color: PdfColors.grey600)),
           pw.SizedBox(height: 4),
-          pw.Text('تم الإنشاء تلقائياً — نظام إدارة محطة الخليل', style: ar(size: 9, color: PdfColors.grey500)),
+          pw.Text(L.get('app_title'), style: ar(size: 9, color: PdfColors.grey500)),
         ]),
       ));
 
@@ -162,7 +158,10 @@ class _ViolationsPageState extends State<ViolationsPage>
       await OpenFile.open(file.path);
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('خطأ في الطباعة: $e'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('${L.get('error')}: $e'),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 
@@ -170,7 +169,6 @@ class _ViolationsPageState extends State<ViolationsPage>
   Widget build(BuildContext context) {
     final items = _filtered;
 
-    // المركبات المحظورة
     final banned = <(LineVehicle, int, int)>[];
     for (int li = 0; li < globalLines.length; li++) {
       for (int vi = 0; vi < globalVehicles[li].length; vi++) {
@@ -181,36 +179,31 @@ class _ViolationsPageState extends State<ViolationsPage>
     }
 
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Column(children: [
-        // Header
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           color: const Color(0xFF2D3A5C),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('شكاوى', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
-              Row(children: [
-                _Tap(
-                  onTap: () => _printViolations(context, items),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    margin: const EdgeInsets.only(left: 8),
-                    decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
-                    child: const Row(children: [
-                      Icon(Icons.print_rounded, color: Colors.white, size: 16),
-                      SizedBox(width: 4),
-                      Text('طباعة', style: TextStyle(color: Colors.white, fontSize: 13)),
-                    ]),
-                  ),
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(L.get('violations'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+            Row(children: [
+              _Tap(
+                onTap: () => _printViolations(context, items),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  margin: const EdgeInsets.only(left: 8),
+                  decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
+                  child: Row(children: [
+                    const Icon(Icons.print_rounded, color: Colors.white, size: 16),
+                    const SizedBox(width: 4),
+                    Text(L.get('print'), style: const TextStyle(color: Colors.white, fontSize: 13)),
+                  ]),
                 ),
-              ]),
-            ],
-          ),
+              ),
+            ]),
+          ]),
         ),
 
-        // Filter tabs
         Container(
           color: context.cardColor,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -218,8 +211,8 @@ class _ViolationsPageState extends State<ViolationsPage>
             children: filterOptions.map((f) {
               final sel = f == activeFilter;
               Color accent = const Color(0xFF2D3A5C);
-              if (f == 'المحظورة') accent = const Color(0xFFFF5A5F);
-              else if (f == 'تم التعامل معها') accent = const Color(0xFF00C897);
+              if (f == L.get('banned'))      accent = const Color(0xFFFF5A5F);
+              else if (f == L.get('fees_paid')) accent = const Color(0xFF00C897);
               return _Tap(
                 onTap: () => setState(() { activeFilter = f; }),
                 child: Container(
@@ -231,19 +224,17 @@ class _ViolationsPageState extends State<ViolationsPage>
                     border: Border.all(color: sel ? accent : context.dividerColor),
                   ),
                   child: Text(f, style: TextStyle(
-                    color: sel ? Colors.white : context.textSecondary,
-                    fontSize: 12, fontWeight: FontWeight.w600)),
+                      color: sel ? Colors.white : context.textSecondary,
+                      fontSize: 12, fontWeight: FontWeight.w600)),
                 ),
               );
             }).toList(),
           ),
         ),
 
-        // المحتوى
-        Expanded(child: activeFilter == 'المحظورة'
-          // ── قسم المحظورة ──
+        Expanded(child: activeFilter == L.get('banned')
           ? (banned.isEmpty
-            ? Center(child: Text('لا توجد مركبات محظورة', style: TextStyle(color: Colors.grey[400], fontSize: 15)))
+            ? Center(child: Text(L.get('no_violations'), style: TextStyle(color: Colors.grey[400], fontSize: 15)))
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: banned.length,
@@ -269,7 +260,7 @@ class _ViolationsPageState extends State<ViolationsPage>
                         Text(lv.vehicleId, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimary)),
                         if (lv.ownerName.isNotEmpty) Text(lv.ownerName, style: TextStyle(fontSize: 12, color: context.textSecondary)),
                         if (lv.note != null && lv.note!.isNotEmpty)
-                          Text('السبب: ${lv.note}', style: const TextStyle(fontSize: 11, color: Color(0xFFFF5A5F))),
+                          Text('${L.get('note')}: ${lv.note}', style: const TextStyle(fontSize: 11, color: Color(0xFFFF5A5F))),
                       ])),
                       _Tap(
                         onTap: () {
@@ -278,13 +269,13 @@ class _ViolationsPageState extends State<ViolationsPage>
                             context: context,
                             builder: (_) => StatefulBuilder(
                               builder: (ctx, setDlg) => Directionality(
-                                textDirection: TextDirection.rtl,
+                                textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
                                 child: AlertDialog(
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                   title: Row(children: [
                                     const Icon(Icons.lock_open_rounded, color: Color(0xFF00C897), size: 20),
                                     const SizedBox(width: 8),
-                                    Expanded(child: Text('رفع الحظر عن ${lv.vehicleId}',
+                                    Expanded(child: Text('${L.get('lift_ban')} ${lv.vehicleId}',
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF00C897)))),
                                   ]),
                                   content: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -296,24 +287,24 @@ class _ViolationsPageState extends State<ViolationsPage>
                                         child: Row(children: [
                                           const Icon(Icons.info_outline, size: 14, color: Color(0xFFFF5A5F)),
                                           const SizedBox(width: 6),
-                                          Expanded(child: Text('سبب الحظر: ${lv.note}', style: const TextStyle(fontSize: 12, color: Color(0xFFFF5A5F)))),
+                                          Expanded(child: Text('${L.get('note')}: ${lv.note}', style: const TextStyle(fontSize: 12, color: Color(0xFFFF5A5F)))),
                                         ]),
                                       ),
                                     ],
-                                    Text('سبب رفع الحظر', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
+                                    Text(L.get('notes'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: ctx.textSecondary)),
                                     const SizedBox(height: 8),
                                     TextField(
                                       controller: reasonCtrl,
                                       maxLines: 2,
                                       decoration: InputDecoration(
-                                        hintText: 'اكتب سبب رفع الحظر...',
+                                        hintText: L.get('additional_notes'),
                                         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
                                         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF00C897))),
                                       ),
                                     ),
                                   ]),
                                   actions: [
-                                    TextButton(onPressed: () => Navigator.pop(context), child: Text('إلغاء', style: TextStyle(color: ctx.textSecondary))),
+                                    TextButton(onPressed: () => Navigator.pop(context), child: Text(L.get('cancel'), style: TextStyle(color: ctx.textSecondary))),
                                     ElevatedButton(
                                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00C897), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                                       onPressed: () {
@@ -326,18 +317,26 @@ class _ViolationsPageState extends State<ViolationsPage>
                                           insuranceExpiry: old.insuranceExpiry, operatingLicNum: old.operatingLicNum,
                                           operatingLicDate: old.operatingLicDate, rfidTag: old.rfidTag, loadingExpiry: old.loadingExpiry,
                                         );
-                                        logEvent(EventItem(vehicleId: lv.vehicleId, location: 'رفع الحظر', time: nowTime(), type: EventType.exit,
-                                            violationNote: reasonCtrl.text.trim().isNotEmpty ? 'رفع الحظر: ${reasonCtrl.text.trim()}' : 'رفع الحظر'));
+                                        logEvent(EventItem(
+                                          vehicleId: lv.vehicleId,
+                                          location: L.get('ban_lifted'),
+                                          time: nowTime(),
+                                          type: EventType.exit,
+                                          violationNote: reasonCtrl.text.trim().isNotEmpty
+                                              ? '${L.get('ban_lifted')}: ${reasonCtrl.text.trim()}'
+                                              : L.get('ban_lifted'),
+                                        ));
                                         autoSave(); setState(() {}); Navigator.pop(context);
                                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                          content: Text('تم رفع الحظر عن ${lv.vehicleId}', textDirection: TextDirection.rtl),
+                                          content: Text('${L.get('ban_lifted_for')} ${lv.vehicleId}',
+                                              textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr),
                                           backgroundColor: const Color(0xFF00C897),
                                           behavior: SnackBarBehavior.floating,
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                           margin: const EdgeInsets.all(16),
                                         ));
                                       },
-                                      child: const Text('رفع الحظر', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                      child: Text(L.get('lift_ban'), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                     ),
                                   ],
                                 ),
@@ -348,21 +347,21 @@ class _ViolationsPageState extends State<ViolationsPage>
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(color: const Color(0xFF00C897).withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFF00C897).withValues(alpha: 0.3))),
-                          child: const Text('رفع الحظر', style: TextStyle(fontSize: 12, color: Color(0xFF00C897), fontWeight: FontWeight.bold)),
+                          child: Text(L.get('lift_ban'), style: const TextStyle(fontSize: 12, color: Color(0xFF00C897), fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ]),
                   );
                 },
               ))
-          // ── قائمة الشكاوى ──
           : (items.isEmpty
-            ? Center(child: Text('لا توجد شكاوى', style: TextStyle(color: Colors.grey[400], fontSize: 15)))
+            ? Center(child: Text(L.get('no_violations'), style: TextStyle(color: Colors.grey[400], fontSize: 15)))
             : ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: items.length,
                 itemBuilder: (_, i) {
                   final v = items[i];
+                  final isPaid = v['status'] == 'تم التعامل معها';
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(14),
@@ -394,11 +393,11 @@ class _ViolationsPageState extends State<ViolationsPage>
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: v['status'] == 'تم التعامل معها' ? const Color(0xFF00C897) : const Color(0xFFC62828),
+                              color: isPaid ? const Color(0xFF00C897) : const Color(0xFFC62828),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              v['status'] == 'تم التعامل معها' ? '✓ تم التعامل' : 'لم يتم التعامل',
+                              isPaid ? '✓ ${L.get('fees_paid')}' : L.get('fees_unpaid'),
                               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                           ),

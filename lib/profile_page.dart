@@ -8,27 +8,26 @@ class _ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_ProfilePage> {
 
-  // ── فتح dialog لتعديل حقل معين ──────────────
   void _editField(String label, String current, void Function(String) onSave) {
     final ctrl = TextEditingController(text: current);
     showDialog(
       context: context,
       builder: (_) => Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
         child: AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text('تعديل $label',
+          title: Text('${L.get('edit')} $label',
               style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.bold)),
           content: TextField(
-             controller: ctrl,
+            controller: ctrl,
             autofocus: true,
-            textDirection: label == 'الهاتف' || label == 'الإيميل'
+            textDirection: label == L.get('phone') || label == 'Email'
                 ? TextDirection.ltr : TextDirection.rtl,
-            keyboardType: label == 'الهاتف' ? TextInputType.phone
-                : label == 'الإيميل' ? TextInputType.emailAddress
+            keyboardType: label == L.get('phone') ? TextInputType.phone
+                : label == 'Email' ? TextInputType.emailAddress
                 : TextInputType.text,
             decoration: InputDecoration(
-              hintText: 'ادخل $label',
+              hintText: '${L.get('enter_name')} $label',
               enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: context.dividerColor)),
@@ -58,7 +57,6 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
     );
   }
 
-  // ── اختيار صورة ─────────────────────────────
   void _pickImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
@@ -70,7 +68,7 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.bgColor,
         appBar: AppBar(
@@ -88,8 +86,6 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
           child: Column(
             children: [
               const SizedBox(height: 30),
-
-              // ── الصورة الشخصية ──────────────
               Stack(
                 alignment: Alignment.bottomLeft,
                 children: [
@@ -100,15 +96,13 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
                         ? MemoryImage(Uint8List.fromList(profileImageBytes!))
                         : null,
                     child: profileImageBytes == null
-                        ? Icon(Icons.person, size: 64, color: const Color(0xFF2D3A5C))
+                        ? const Icon(Icons.person, size: 64, color: Color(0xFF2D3A5C))
                         : null,
                   ),
-                  // زر تغيير الصورة
                   _Tap(
                     onTap: _pickImage,
                     child: Container(
-                      width: 30,
-                      height: 30,
+                      width: 30, height: 30,
                       decoration: BoxDecoration(
                         color: const Color(0xFF2D3A5C),
                         shape: BoxShape.circle,
@@ -120,7 +114,6 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
                 ],
               ),
               const SizedBox(height: 14),
-
               Text(profileName,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,
                       color: context.textPrimary)),
@@ -129,38 +122,33 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
                   style: TextStyle(fontSize: 13, color: context.textSecondary)),
               const SizedBox(height: 30),
 
-              // ── الحقول القابلة للتعديل ──────
               _EditableProfileRow(
                 icon: Icons.person_outline,
-                label: 'الاسم',
+                label: L.get('full_name'),
                 value: profileName,
-                onTap: () => _editField('الاسم', profileName,
-                    (v) => profileName = v),
+                onTap: () => _editField(L.get('full_name'), profileName, (v) => profileName = v),
               ),
               _EditableProfileRow(
                 icon: Icons.email_outlined,
                 label: 'Email',
                 value: profileEmail,
-                onTap: () => _editField('الإيميل', profileEmail,
-                    (v) => profileEmail = v),
+                onTap: () => _editField('Email', profileEmail, (v) => profileEmail = v),
               ),
               _EditableProfileRow(
                 icon: Icons.phone_outlined,
-                label: 'Phone',
+                label: L.get('phone'),
                 value: profilePhone,
-                onTap: () => _editField('الهاتف', profilePhone,
-                    (v) => profilePhone = v),
+                onTap: () => _editField(L.get('phone'), profilePhone, (v) => profilePhone = v),
               ),
               _EditableProfileRow(
                 icon: Icons.badge_outlined,
                 label: L.get('role'),
-                value: 'أدمن',
-                onTap: null, // غير قابل للتعديل
+                value: 'Admin',
+                onTap: null,
               ),
 
               const SizedBox(height: 30),
 
-              // ── زر تسجيل الخروج ─────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
                 child: Material(
@@ -172,7 +160,7 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (_) => Directionality(
-                          textDirection: TextDirection.rtl,
+                          textDirection: L.isArabic ? TextDirection.rtl : TextDirection.ltr,
                           child: AlertDialog(
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                             title: Row(children: [
@@ -186,12 +174,10 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
                               ),
                               const SizedBox(width: 10),
                               Text(L.get('logout'),
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                             ]),
-                            content: const Text(
-                              'هل أنت متأكد أنك تريد تسجيل الخروج؟\nسيتم حفظ جميع البيانات.',
-                              style: TextStyle(fontSize: 14),
-                            ),
+                            content: Text(L.get('logout_confirm'),
+                                style: const TextStyle(fontSize: 14)),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
@@ -204,12 +190,9 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10)),
                                 ),
-                                icon: const Icon(Icons.logout_rounded,
-                                    color: Colors.white, size: 18),
-                                label: Text('Exit',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold)),
+                                icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 18),
+                                label: Text(L.get('logout'),
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                                 onPressed: () => Navigator.pop(context, true),
                               ),
                             ],
@@ -230,10 +213,10 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.logout, color: Colors.red, size: 20),
+                          const Icon(Icons.logout, color: Colors.red, size: 20),
                           const SizedBox(width: 8),
                           Text(L.get('logout'),
-                              style: TextStyle(color: Colors.red,
+                              style: const TextStyle(color: Colors.red,
                                   fontWeight: FontWeight.bold, fontSize: 15)),
                         ],
                       ),
@@ -249,7 +232,6 @@ class _ProfilePageState extends State<_ProfilePage> with DarkModeRebuild<_Profil
   }
 }
 
-// ── صف معلومة قابل للتعديل ───────────────────
 class _EditableProfileRow extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -301,7 +283,6 @@ class _EditableProfileRow extends StatelessWidget {
   }
 }
 
-// ── (legacy - kept for compatibility) ────────
 class _ProfileInfoRow extends StatelessWidget {
   final IconData icon;
   final String value;
