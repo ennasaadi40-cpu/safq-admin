@@ -10,7 +10,7 @@ class _ViolationsPageState extends State<ViolationsPage>
     with DarkModeRebuild<ViolationsPage>, SearchFilterMixin<Map<String, String>> {
   final _searchCtrl = TextEditingController();
 
-  @override List<String> get filterOptions => [L.get('all'), L.get('fees_paid'), L.get('fees_unpaid'), L.get('banned')];
+  @override List<String> get filterOptions => [L.get('all'), L.get('handled'), L.get('not_handled'), L.get('banned')];
 
   @override
   bool itemMatchesSearch(Map<String, String> v, String q) {
@@ -26,14 +26,14 @@ class _ViolationsPageState extends State<ViolationsPage>
     if (f == L.get('banned')) {
       for (final list in globalVehicles) {
         for (final lv in list) {
-          if (lv.vehicleId == v['vehicle'] && lv.status == 'محظورة') return true;
+          if (lv.vehicleId == v['vehicle'] && lv.status == STATUS_BANNED) return true;
         }
       }
       return false;
     }
-    if (f == L.get('all')) return v['status'] != 'تم التعامل معها';
-    if (f == L.get('fees_paid'))   return v['status'] == 'تم التعامل معها';
-    if (f == L.get('fees_unpaid')) return v['status'] == 'لم يتم التعامل معها';
+    if (f == L.get('all')) return v['status'] != 'handled';
+    if (f == L.get('handled'))     return v['status'] == 'handled';
+    if (f == L.get('not_handled')) return v['status'] == 'not_handled';
     return v['status'] == f;
   }
 
@@ -50,7 +50,7 @@ class _ViolationsPageState extends State<ViolationsPage>
         'name': e.location,
         'vehicle': e.vehicleId,
         'owner': '',
-        'status': e.feesPaid == true ? 'تم التعامل معها' : 'لم يتم التعامل معها',
+        'status': e.feesPaid == true ? 'handled' : 'not_handled',
         'amount': amtMatch?.group(1) ?? '0',
         'date': e.time,
         '_idx': i.toString(),
@@ -69,10 +69,10 @@ class _ViolationsPageState extends State<ViolationsPage>
 
   List<Map<String, String>> get _filtered {
     final all = _violations;
-    if (activeFilter == L.get('all')) return all.where((v) => v['status'] != 'تم التعامل معها').toList();
+    if (activeFilter == L.get('all')) return all.where((v) => v['status'] != 'handled').toList();
     if (activeFilter == L.get('banned')) return all.where((v) => itemMatchesFilter(v, L.get('banned'))).toList();
-    if (activeFilter == L.get('fees_paid'))   return all.where((v) => v['status'] == 'تم التعامل معها').toList();
-    if (activeFilter == L.get('fees_unpaid')) return all.where((v) => v['status'] == 'لم يتم التعامل معها').toList();
+    if (activeFilter == L.get('handled'))     return all.where((v) => v['status'] == 'handled').toList();
+    if (activeFilter == L.get('not_handled')) return all.where((v) => v['status'] == 'not_handled').toList();
     return all;
   }
 
@@ -137,14 +137,18 @@ class _ViolationsPageState extends State<ViolationsPage>
                 pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['name'] ?? '', textDirection: pw.TextDirection.rtl, style: ar())),
                 pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['vehicle'] ?? '', textDirection: pw.TextDirection.ltr, style: ar())),
                 pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['amount'] ?? '—', textDirection: pw.TextDirection.rtl, style: ar())),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['status'] ?? '', textDirection: pw.TextDirection.rtl, style: ar(color: v['status'] == 'تم التعامل معها' ? PdfColors.green700 : PdfColors.red700))),
+                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(
+                  v['status'] == 'handled' ? L.get('handled') : L.get('not_handled'),
+                  textDirection: pw.TextDirection.rtl,
+                  style: ar(color: v['status'] == 'handled' ? PdfColors.green700 : PdfColors.red700),
+                )),
               ])),
             ],
           ),
           pw.Spacer(),
           pw.Divider(color: PdfColors.grey400),
           pw.SizedBox(height: 4),
-          pw.Text('${items.length} ${L.get('violations')}   |   ${L.get('fees_paid')}: ${items.where((v) => v['status'] == 'تم التعامل معها').length}   |   ${L.get('fees_unpaid')}: ${items.where((v) => v['status'] != 'تم التعامل معها').length}',
+          pw.Text('${items.length} ${L.get('violations')}   |   ${L.get('handled')}: ${items.where((v) => v['status'] == 'handled').length}   |   ${L.get('not_handled')}: ${items.where((v) => v['status'] == 'not_handled').length}',
               textDirection: pw.TextDirection.rtl, style: ar(size: 10, color: PdfColors.grey600)),
           pw.SizedBox(height: 4),
           pw.Text(L.get('app_title'), style: ar(size: 9, color: PdfColors.grey500)),
@@ -172,7 +176,7 @@ class _ViolationsPageState extends State<ViolationsPage>
     final banned = <(LineVehicle, int, int)>[];
     for (int li = 0; li < globalLines.length; li++) {
       for (int vi = 0; vi < globalVehicles[li].length; vi++) {
-        if (globalVehicles[li][vi].status == 'محظورة') {
+        if (globalVehicles[li][vi].status == STATUS_BANNED) {
           banned.add((globalVehicles[li][vi], li, vi));
         }
       }
@@ -212,7 +216,7 @@ class _ViolationsPageState extends State<ViolationsPage>
               final sel = f == activeFilter;
               Color accent = const Color(0xFF2D3A5C);
               if (f == L.get('banned'))      accent = const Color(0xFFFF5A5F);
-              else if (f == L.get('fees_paid')) accent = const Color(0xFF00C897);
+              else if (f == L.get('handled')) accent = const Color(0xFF00C897);
               return _Tap(
                 onTap: () => setState(() { activeFilter = f; }),
                 child: Container(
@@ -311,11 +315,13 @@ class _ViolationsPageState extends State<ViolationsPage>
                                         final old = globalVehicles[li][vi];
                                         globalVehicles[li][vi] = LineVehicle(
                                           number: old.number, vehicleId: old.vehicleId,
-                                          status: 'في الانتظار',
+                                          status: STATUS_WAITING,
                                           note: reasonCtrl.text.trim().isNotEmpty ? reasonCtrl.text.trim() : null,
                                           ownerName: old.ownerName, carLicExpiry: old.carLicExpiry,
                                           insuranceExpiry: old.insuranceExpiry, operatingLicNum: old.operatingLicNum,
                                           operatingLicDate: old.operatingLicDate, rfidTag: old.rfidTag, loadingExpiry: old.loadingExpiry,
+                                          maker: old.maker, model: old.model, year: old.year, chassis: old.chassis,
+                                          ownerPhone: old.ownerPhone, ownerId: old.ownerId, driverName: old.driverName,
                                         );
                                         logEvent(EventItem(
                                           vehicleId: lv.vehicleId,
@@ -361,7 +367,7 @@ class _ViolationsPageState extends State<ViolationsPage>
                 itemCount: items.length,
                 itemBuilder: (_, i) {
                   final v = items[i];
-                  final isPaid = v['status'] == 'تم التعامل معها';
+                  final isHandled = v['status'] == 'handled';
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(14),
@@ -393,11 +399,11 @@ class _ViolationsPageState extends State<ViolationsPage>
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: isPaid ? const Color(0xFF00C897) : const Color(0xFFC62828),
+                              color: isHandled ? const Color(0xFF00C897) : const Color(0xFFC62828),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              isPaid ? '✓ ${L.get('fees_paid')}' : L.get('fees_unpaid'),
+                              isHandled ? '✓ ${L.get('handled')}' : L.get('not_handled'),
                               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                           ),

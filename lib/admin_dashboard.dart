@@ -1,5 +1,13 @@
 part of station_app;
 
+// ═══════════════════════════════════════════════════════════════════
+//  ثوابت الحالات
+// ═══════════════════════════════════════════════════════════════════
+const String STATUS_IN_LINE = 'في الخط';
+const String STATUS_WAITING = 'في الانتظار';
+const String STATUS_READY = 'جاهزة';
+const String STATUS_BANNED = 'محظورة';
+
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
 
@@ -66,10 +74,10 @@ class _DashboardBodyState extends State<_DashboardBody> with DarkModeRebuild<_Da
   int get _totalLines    => globalLines.length;
   int get _totalUsers    => globalUsers.length;
   int get _violations    => globalEvents.where((e) => e.type == EventType.violation).length;
-  int get _waiting       => globalVehicles.fold(0, (s, l) => s + l.where((v) => v.status == 'في الانتظار').length);
-  int get _ready         => globalVehicles.fold(0, (s, l) => s + l.where((v) => v.status == 'جاهزة').length);
-  int get _banned        => globalVehicles.fold(0, (s, l) => s + l.where((v) => v.status == 'محظورة').length);
-  int get _activeUsers   => globalVehicles.fold(0, (s, l) => s + l.where((v) => v.status == 'في الخط').length);
+  int get _waiting       => globalVehicles.fold(0, (s, l) => s + l.where((v) => v.status == STATUS_WAITING).length);
+  int get _ready         => globalVehicles.fold(0, (s, l) => s + l.where((v) => v.status == STATUS_READY).length);
+  int get _banned        => globalVehicles.fold(0, (s, l) => s + l.where((v) => v.status == STATUS_BANNED).length);
+  int get _activeUsers   => globalVehicles.fold(0, (s, l) => s + l.where((v) => v.status == STATUS_IN_LINE).length);
 
   String _greeting() {
     final h = DateTime.now().hour;

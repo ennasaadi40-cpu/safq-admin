@@ -469,6 +469,9 @@ class L {
     'sender':                'المرسل',
     'location':              'الموقع',
     'destination':           'الوجهة',
+    'supervisor_role': 'موظف أمن',
+    'handled':        'تم التعامل معاها',
+    'not_handled':    'لم يتم التعامل معاها',
   };
 
   static const Map<String, String> _en = {
@@ -931,6 +934,9 @@ class L {
     'sender':                'Sender',
     'location':              'Location',
     'destination':           'Destination',
+    'supervisor_role': 'Security Officer',
+    'handled':        'Handled',
+    'not_handled':    'Not Handled',
   };
 
   static void toggleLanguage() {

@@ -537,7 +537,13 @@ class GateModel {
     this.ip = '',
   });
 
-  String get label => 'طابق $floor — $type $number';
+  String get label {
+    final displayType = L.isArabic 
+      ? (type == 'مدخل' ? L.get('entry') : L.get('exit'))
+      : (type == 'مدخل' ? 'Entry' : 'Exit');
+    final floorLabel = L.isArabic ? L.get('floor') : 'Floor';
+    return '$floorLabel $floor — $displayType $number';
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id, 'floor': floor, 'type': type, 'number': number, 'ip': ip,
