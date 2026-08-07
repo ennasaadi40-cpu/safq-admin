@@ -42,14 +42,14 @@ class StationApp extends StatelessWidget {
                 brightness: Brightness.dark,
                 textTheme: GoogleFonts.tajawalTextTheme(ThemeData(brightness: Brightness.dark).textTheme),
                 fontFamily: GoogleFonts.tajawal().fontFamily,
-                scaffoldBackgroundColor: const Color(0xFF1A2540),
+                scaffoldBackgroundColor: const Color(0xFF10182E),
                 colorScheme: ColorScheme.fromSeed(
                   seedColor: const Color(0xFF4A6FA5),
                   brightness: Brightness.dark,
                 ),
-                cardColor: const Color(0xFF243560),
+                cardColor: const Color(0xFF2A3A63),
                 appBarTheme: const AppBarTheme(
-                  backgroundColor: Color(0xFF1A2540),
+                  backgroundColor: Color(0xFF10182E),
                   foregroundColor: Colors.white,
                 ),
                 listTileTheme: const ListTileThemeData(mouseCursor: WidgetStateMouseCursor.clickable),

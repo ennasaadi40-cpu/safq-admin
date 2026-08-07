@@ -474,6 +474,16 @@ class L {
     'assigned_vehicle':      'المركبة',
     'assigned_driver':       'السائق',
     'assigned_line':         'الخط',
+    'orders_tab':            'الأوردر',
+    'delivery_tab':          'خدمات توصيل الركاب',
+    'order_delivered':       'وصل',
+    'order_not_delivered':   'لم يصل',
+    'no_orders':             'لا توجد أوردرات',
+    'no_delivery_requests':  'لا توجد طلبات توصيل',
+    'waiting_location':      'مكان الانتظار',
+    'assign_vehicle':        'تعيين مركبة',
+    'accept':                'قبول',
+    'reject':                'رفض',
     'sender':                'المرسل',
     'location':              'الموقع',
     'destination':           'الوجهة',
@@ -947,6 +957,16 @@ class L {
     'assigned_vehicle':      'Vehicle',
     'assigned_driver':       'Driver',
     'assigned_line':         'Line',
+    'orders_tab':            'Orders',
+    'delivery_tab':          'Passenger Delivery',
+    'order_delivered':       'Delivered',
+    'order_not_delivered':   'Not Delivered',
+    'no_orders':             'No orders',
+    'no_delivery_requests':  'No delivery requests',
+    'waiting_location':      'Waiting Location',
+    'assign_vehicle':        'Assign Vehicle',
+    'accept':                'Accept',
+    'reject':                'Reject',
     'sender':                'Sender',
     'location':              'Location',
     'destination':           'Destination',
@@ -962,3 +982,6 @@ class L {
   static bool get isArabic => langNotifier.value == 'ar';
   static bool get isEnglish => langNotifier.value == 'en';
 }
+
+
+

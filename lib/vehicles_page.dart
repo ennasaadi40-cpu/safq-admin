@@ -64,7 +64,7 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
               const SizedBox(height: 6),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE0E4EE)), borderRadius: BorderRadius.circular(10), color: ctx.cardColor),
+                decoration: BoxDecoration(border: Border.all(color: ctx.dividerColor), borderRadius: BorderRadius.circular(10), color: ctx.cardColor),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String?>(
                     value: selectedLine,
@@ -92,7 +92,7 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                 decoration: InputDecoration(
                   hintText: '7',
                   prefixIcon: const Icon(Icons.calendar_today, size: 18, color: Color(0xFFFFB347)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: ctx.dividerColor)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFFFB347))),
                 ),
               ),
@@ -331,7 +331,7 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                                                     },
                                                     child: Container(
                                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                                                      decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE0E4EE)), borderRadius: BorderRadius.circular(10)),
+                                                      decoration: BoxDecoration(border: Border.all(color: ctx.dividerColor), borderRadius: BorderRadius.circular(10)),
                                                       child: Row(children: [
                                                         const Icon(Icons.calendar_today_outlined, size: 16, color: Color(0xFF2D3A5C)),
                                                         const SizedBox(width: 8),
@@ -445,13 +445,13 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                                                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                                       Text(L.get('from'), style: TextStyle(fontSize: 11, color: ctx.textSecondary)),
                                                       const SizedBox(height: 3),
-                                                      TextField(controller: fromCtrl, decoration: InputDecoration(hintText: L.get('from'), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE0E4EE))), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF00C897))))),
+                                                      TextField(controller: fromCtrl, decoration: InputDecoration(hintText: L.get('from'), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: ctx.dividerColor)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF00C897))))),
                                                     ])),
                                                     const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Icon(Icons.arrow_back_rounded, size: 16, color: Color(0xFF00C897))),
                                                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                                       Text(L.get('to'), style: TextStyle(fontSize: 11, color: ctx.textSecondary)),
                                                       const SizedBox(height: 3),
-                                                      TextField(controller: toCtrl, decoration: InputDecoration(hintText: L.get('to'), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE0E4EE))), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF00C897))))),
+                                                      TextField(controller: toCtrl, decoration: InputDecoration(hintText: L.get('to'), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10), enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: ctx.dividerColor)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF00C897))))),
                                                     ])),
                                                   ]),
                                                   const SizedBox(height: 12),
@@ -459,7 +459,7 @@ class _VehiclesPageState extends State<VehiclesPage> with DarkModeRebuild<Vehicl
                                                   const SizedBox(height: 4),
                                                   Container(
                                                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                                                    decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE0E4EE)), borderRadius: BorderRadius.circular(10), color: ctx.cardColor),
+                                                    decoration: BoxDecoration(border: Border.all(color: ctx.dividerColor), borderRadius: BorderRadius.circular(10), color: ctx.cardColor),
                                                     child: DropdownButtonHideUnderline(child: DropdownButton<String>(
                                                       value: selLine,
                                                       isExpanded: true,

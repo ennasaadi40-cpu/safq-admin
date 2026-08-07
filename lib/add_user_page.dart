@@ -489,7 +489,7 @@ class _FormField extends StatefulWidget {
   State<_FormField> createState() => _FormFieldState();
 }
 
-class _FormFieldState extends State<_FormField> {
+class _FormFieldState extends State<_FormField> with DarkModeRebuild<_FormField> {
   final _kbFocus = FocusNode();
 
   @override
@@ -525,12 +525,14 @@ class _FormFieldState extends State<_FormField> {
       maxLength: widget.maxLength,
       decoration: InputDecoration(
         hintText: widget.hint,
-        hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFB0B8CC)),
+        hintStyle: TextStyle(fontSize: 13, color: context.isDark ? Colors.white38 : const Color(0xFFB0B8CC)),
         suffixIcon: widget.suffix,
+        filled: true,
+        fillColor: context.cardColor,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFFE0E4EE)),
+          borderSide: BorderSide(color: context.dividerColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),

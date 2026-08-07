@@ -611,7 +611,10 @@ final RegExp _arabicCharsRegex = RegExp(r'[\u0600-\u06FF]');
 /// مربعات فارغة (tofu) بدل الرمز. يستبدلها برمز بديل مدعوم بكل الخطوط.
 String pdfSafe(String? text) {
   if (text == null) return '';
-  return text.replaceAll('→', '-').replaceAll('←', '-');
+  return text
+      .replaceAll('→', '-')
+      .replaceAll('←', '-')
+      .replaceAll('₪', 'NIS');
 }
 
 pw.TextDirection pdfDir(String? text) =>

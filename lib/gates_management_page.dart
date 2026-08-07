@@ -6,7 +6,7 @@ class _GatesManagementPage extends StatefulWidget {
   State<_GatesManagementPage> createState() => _GatesManagementPageState();
 }
 
-class _GatesManagementPageState extends State<_GatesManagementPage> {
+class _GatesManagementPageState extends State<_GatesManagementPage> with DarkModeRebuild<_GatesManagementPage> {
   final _floorCtrl  = TextEditingController();
   final _numberCtrl = TextEditingController();
   final _ipCtrl     = TextEditingController();

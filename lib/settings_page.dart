@@ -17,7 +17,8 @@ class _SettingsPageState extends State<SettingsPage> with DarkModeRebuild<Settin
     globalEvents.clear();
     globalSecurityNotifications.clear();
     globalGates.clear();
-    globalRequests.clear();
+    globalOrders.clear();
+    globalDeliveryRequests.clear();
 
     profileName = 'المدير';
     profileImageBytes = null;
@@ -739,7 +740,7 @@ class _PassField extends StatelessWidget {
             onPressed: onToggle),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+              borderSide: BorderSide(color: ctx.dividerColor)),
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFF2D3A5C))),

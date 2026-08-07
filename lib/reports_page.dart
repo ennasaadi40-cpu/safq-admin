@@ -507,7 +507,7 @@ class _DailyMovementReportState extends State<_DailyMovementReport> with DarkMod
     }
 
     return Column(children: exits.take(20).map((e) {
-      final isException = globalRequests.any((r) =>
+      final isException = [...globalOrders, ...globalDeliveryRequests].any((r) =>
           r.assignedVehicleId == e.vehicleId && r.status == RequestStatus.accepted);
       final color = isException ? const Color(0xFFFFB347) : const Color(0xFF00C897);
       final label = isException ? L.get('requests') : L.get('success');
@@ -560,7 +560,7 @@ class _ExceptionOrdersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final exceptions = globalRequests.where((r) =>
+    final exceptions = [...globalOrders, ...globalDeliveryRequests].where((r) =>
         r.assignedVehicleId != null &&
         r.status == RequestStatus.accepted).toList();
 

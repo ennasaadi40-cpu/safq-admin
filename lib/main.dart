@@ -93,17 +93,13 @@ void main() async {
   globalUsers = globalUsers.where((u) => u.role != 'مالك سيارة').toList();
   await UserStorage.instance.save(globalUsers);
 
-  await loadRequests();
+  await loadOrders();
+  await loadDeliveryRequests();
 
   // تحميل بيانات وهمية إذا ما في بيانات محفوظة
   if (globalLines.isEmpty && globalUsers.isEmpty) {
     loadDummyData();
     await saveAllData();
-    await saveRequests();
-  } else if (globalRequests.isEmpty) {
-    // أضف طلبات وهمية فقط إذا فارغة
-    loadDummyData();
-    await saveRequests();
   }
 
   runApp(const StationApp());

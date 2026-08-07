@@ -156,7 +156,7 @@ class _SearchableDropdown extends StatefulWidget {
   State<_SearchableDropdown> createState() => _SearchableDropdownState();
 }
 
-class _SearchableDropdownState extends State<_SearchableDropdown> {
+class _SearchableDropdownState extends State<_SearchableDropdown> with DarkModeRebuild<_SearchableDropdown> {
   final _ctrl = TextEditingController();
   bool _showList = false;
   List<String> _filtered = [];

@@ -46,7 +46,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
       hintText: hint,
       hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
       prefixIcon: icon != null ? Icon(icon, size: 18, color: Colors.grey[400]) : null,
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: context.dividerColor)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
       contentPadding: EdgeInsets.symmetric(horizontal: icon != null ? 4 : 12, vertical: 10),
     );
@@ -164,7 +164,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                               decoration: BoxDecoration(
                                 color: sel ? const Color(0xFF00C897) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: sel ? const Color(0xFF00C897) : const Color(0xFFE0E4EE)),
+                                border: Border.all(color: sel ? const Color(0xFF00C897) : ctx.dividerColor),
                               ),
                               child: Text(g.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
                                   color: sel ? Colors.white : Colors.grey[600])),
@@ -200,7 +200,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                               decoration: BoxDecoration(
                                 color: sel ? const Color(0xFFFF5A5F) : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: sel ? const Color(0xFFFF5A5F) : const Color(0xFFE0E4EE)),
+                                border: Border.all(color: sel ? const Color(0xFFFF5A5F) : ctx.dividerColor),
                               ),
                               child: Text(g.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
                                   color: sel ? Colors.white : Colors.grey[600])),
@@ -229,7 +229,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                         decoration: InputDecoration(
                           hintText: '',
                           prefixIcon: const Icon(Icons.payments_outlined, size: 18, color: Color(0xFF00C897)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: ctx.dividerColor)),
                           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         ),
@@ -244,7 +244,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                         decoration: InputDecoration(
                           hintText: '',
                           prefixIcon: const Icon(Icons.grid_view_rounded, size: 18, color: Color(0xFF4B9EFF)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: ctx.dividerColor)),
                           focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         ),
@@ -353,7 +353,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
     InputDecoration dec(String hint) => InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: context.dividerColor)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     );
@@ -445,7 +445,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                     textDirection: TextDirection.ltr,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.payments_outlined, size: 18, color: Color(0xFF00C897)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: ctx.dividerColor)),
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
@@ -459,7 +459,7 @@ class _LinesPageState extends State<LinesPage> with DarkModeRebuild<LinesPage> {
                     textDirection: TextDirection.ltr,
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.grid_view_rounded, size: 18, color: Color(0xFF4B9EFF)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: ctx.dividerColor)),
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     ),
@@ -1485,7 +1485,7 @@ class _LineExpandedSectionState extends State<_LineExpandedSection>
                                     decoration: InputDecoration(
                                       hintText: L.get('date_format'),
                                       prefixIcon: const Icon(Icons.calendar_today, size: 18, color: Color(0xFF2D3A5C)),
-                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: ctx.dividerColor)),
                                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF2D3A5C))),
                                     ),
                                     onTap: () async {
