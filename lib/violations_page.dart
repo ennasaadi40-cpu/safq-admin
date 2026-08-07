@@ -98,7 +98,7 @@ class _ViolationsPageState extends State<ViolationsPage>
 
       pdf.addPage(pw.Page(
         pageFormat: PdfPageFormat.a4,
-        textDirection: pw.TextDirection.rtl,
+        textDirection: L.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
         margin: const pw.EdgeInsets.all(28),
         build: (pw.Context ctx) => pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
           pw.Container(
@@ -125,21 +125,21 @@ class _ViolationsPageState extends State<ViolationsPage>
               pw.TableRow(
                 decoration: const pw.BoxDecoration(color: PdfColors.blueGrey100),
                 children: [
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('complaint_number'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('complaint_type'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('vehicle'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('violation_amount'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(L.get('status'), textDirection: pw.TextDirection.rtl, style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(pdfSafe(L.get('complaint_number')), textDirection: pdfDir(L.get('complaint_number')), style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(pdfSafe(L.get('complaint_type')), textDirection: pdfDir(L.get('complaint_type')), style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(pdfSafe(L.get('vehicle')), textDirection: pdfDir(L.get('vehicle')), style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(pdfSafe(L.get('violation_amount')), textDirection: pdfDir(L.get('violation_amount')), style: ar(w: pw.FontWeight.bold))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(pdfSafe(L.get('status')), textDirection: pdfDir(L.get('status')), style: ar(w: pw.FontWeight.bold))),
                 ],
               ),
               ...items.map((v) => pw.TableRow(children: [
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['id'] ?? '', textDirection: pw.TextDirection.rtl, style: ar())),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['name'] ?? '', textDirection: pw.TextDirection.rtl, style: ar())),
+                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(pdfSafe(v['id'] ?? ''), textDirection: pdfDir(v['id'] ?? ''), style: ar())),
+                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(pdfSafe(v['name'] ?? ''), textDirection: pdfDir(v['name'] ?? ''), style: ar())),
                 pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['vehicle'] ?? '', textDirection: pw.TextDirection.ltr, style: ar())),
-                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(v['amount'] ?? '—', textDirection: pw.TextDirection.rtl, style: ar())),
+                pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(pdfSafe(v['amount'] ?? '—'), textDirection: pdfDir(v['amount'] ?? '—'), style: ar())),
                 pw.Padding(padding: const pw.EdgeInsets.all(5), child: pw.Text(
                   v['status'] == 'handled' ? L.get('handled') : L.get('not_handled'),
-                  textDirection: pw.TextDirection.rtl,
+                  textDirection: L.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
                   style: ar(color: v['status'] == 'handled' ? PdfColors.green700 : PdfColors.red700),
                 )),
               ])),
@@ -149,7 +149,7 @@ class _ViolationsPageState extends State<ViolationsPage>
           pw.Divider(color: PdfColors.grey400),
           pw.SizedBox(height: 4),
           pw.Text('${items.length} ${L.get('violations')}   |   ${L.get('handled')}: ${items.where((v) => v['status'] == 'handled').length}   |   ${L.get('not_handled')}: ${items.where((v) => v['status'] == 'not_handled').length}',
-              textDirection: pw.TextDirection.rtl, style: ar(size: 10, color: PdfColors.grey600)),
+              textDirection: L.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr, style: ar(size: 10, color: PdfColors.grey600)),
           pw.SizedBox(height: 4),
           pw.Text(L.get('app_title'), style: ar(size: 9, color: PdfColors.grey500)),
         ]),
@@ -302,7 +302,7 @@ class _ViolationsPageState extends State<ViolationsPage>
                                       maxLines: 2,
                                       decoration: InputDecoration(
                                         hintText: L.get('additional_notes'),
-                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE0E4EE))),
+                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: ctx.dividerColor)),
                                         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF00C897))),
                                       ),
                                     ),

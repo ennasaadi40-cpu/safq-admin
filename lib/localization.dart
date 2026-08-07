@@ -477,7 +477,7 @@ class L {
     'sender':                'المرسل',
     'location':              'الموقع',
     'destination':           'الوجهة',
-    'supervisor_role': 'موظف أمن',
+    'supervisor_role': 'مشرف خط',
     'handled':        'تم التعامل معاها',
     'not_handled':    'لم يتم التعامل معاها',
   };
@@ -950,7 +950,7 @@ class L {
     'sender':                'Sender',
     'location':              'Location',
     'destination':           'Destination',
-    'supervisor_role': 'Security Officer',
+    'supervisor_role': 'Line Supervisor',
     'handled':        'Handled',
     'not_handled':    'Not Handled',
   };

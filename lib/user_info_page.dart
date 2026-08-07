@@ -131,19 +131,19 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
       pw.TableRow tRow(String label, String value) => pw.TableRow(children: [
         pw.Padding(
           padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          child: pw.Text(value, textDirection: pw.TextDirection.rtl,
+          child: pw.Text(pdfSafe(value), textDirection: pdfDir(value),
               textAlign: pw.TextAlign.right, style: ar(w: pw.FontWeight.bold)),
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          child: pw.Text(label, textDirection: pw.TextDirection.rtl,
+          child: pw.Text(pdfSafe(label), textDirection: pdfDir(label),
               textAlign: pw.TextAlign.right, style: ar(color: PdfColors.grey700)),
         ),
       ]);
 
       pdf.addPage(pw.Page(
         pageFormat: PdfPageFormat.a4,
-        textDirection: pw.TextDirection.rtl,
+        textDirection: L.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context ctx) => pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.end, children: [
           pw.Container(

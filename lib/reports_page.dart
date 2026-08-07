@@ -129,7 +129,7 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
 
     pdf.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
-      textDirection: pw.TextDirection.rtl,
+      textDirection: L.isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
       margin: const pw.EdgeInsets.all(32),
       build: (pw.Context c) => [
         pw.Container(
@@ -254,9 +254,9 @@ class _ReportsPageState extends State<ReportsPage> with DarkModeRebuild<ReportsP
     if (usedFont != null) style = style.copyWith(font: usedFont);
     return pw.TableRow(decoration: pw.BoxDecoration(color: bg), children: [
       pw.Padding(padding: const pw.EdgeInsets.all(6),
-          child: pw.Text(a, textDirection: pw.TextDirection.rtl, style: style)),
+          child: pw.Text(pdfSafe(a), textDirection: pdfDir(a), style: style)),
       pw.Padding(padding: const pw.EdgeInsets.all(6),
-          child: pw.Text(b, textDirection: pw.TextDirection.rtl, style: style)),
+          child: pw.Text(pdfSafe(b), textDirection: pdfDir(b), style: style)),
     ]);
   }
 
@@ -484,7 +484,7 @@ class _DailyMovementReport extends StatefulWidget {
   State<_DailyMovementReport> createState() => _DailyMovementReportState();
 }
 
-class _DailyMovementReportState extends State<_DailyMovementReport> {
+class _DailyMovementReportState extends State<_DailyMovementReport> with DarkModeRebuild<_DailyMovementReport> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();

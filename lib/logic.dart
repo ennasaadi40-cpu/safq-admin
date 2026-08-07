@@ -101,11 +101,23 @@ mixin DarkModeRebuild<T extends StatefulWidget> on State<T> {
 
 extension AppThemeContext on BuildContext {
   bool  get isDark        => Theme.of(this).brightness == Brightness.dark;
-  Color get bgColor       => isDark ? const Color(0xFF1A2540) : const Color(0xFFF5F5F5);
-  Color get cardColor     => isDark ? const Color(0xFF243560) : Colors.white;
+  // ✅ خلفية أعمق شوي + كارت أفتح بوضوح منها = تباين أوضح بالدارك مود
+  // (كانت الخلفية والكارت قريبين من بعض بالدرجة، فطلعوا كأنهم لون واحد غامق)
+  Color get bgColor       => isDark ? const Color(0xFF10182E) : const Color(0xFFF5F5F5);
+  Color get cardColor     => isDark ? const Color(0xFF2A3A63) : Colors.white;
   Color get textPrimary   => isDark ? Colors.white : const Color(0xFF1A1A2E);
-  Color get textSecondary => isDark ? Colors.white60 : Colors.black54;
-  Color get dividerColor  => isDark ? Colors.white12 : Colors.black12;
+  Color get textSecondary => isDark ? Colors.white70 : Colors.black54;
+  Color get dividerColor  => isDark ? Colors.white24 : Colors.black12;
+
+  /// لون تمييز (تينت) متكيّف مع الثيم — للاستخدام بخلفيات الشارات/الأيقونات الملوّنة
+  /// بدل ما نستخدم accent.withValues(alpha: 0.08) مباشرة (يطلع شبه مخفي بالدارك مود
+  /// لأنه لون غامق فوق خلفية غامقة)، هاي الدالة بتفتح اللون شوي وبترفع الشفافية
+  /// تلقائياً بالدارك مود حتى يضل واضح ومتناسق.
+  Color surfaceTint(Color accent, {double opacity = 0.1}) {
+    if (!isDark) return accent.withValues(alpha: opacity);
+    final lightened = Color.lerp(accent, Colors.white, 0.18) ?? accent;
+    return lightened.withValues(alpha: (opacity * 2.4).clamp(0.0, 1.0));
+  }
 }
 
 class StatItem {
@@ -589,6 +601,23 @@ List<GateModel> globalGates = [
   GateModel(id: 'g3', floor: '2', type: 'مدخل',  number: '1'),
   GateModel(id: 'g4', floor: '2', type: 'مخرج',  number: '1'),
 ];
+
+/// ✅ يحدد اتجاه النص تلقائياً حسب محتواه الفعلي (عربي أو غيره) — يُستخدم بتقارير الـ PDF
+/// حتى تضل البيانات القادمة من قاعدة البيانات (أسماء عربية مثلاً) RTL دايماً بغض النظر عن
+/// لغة الواجهة الحالية، بينما العناوين المترجمة (L.get) بتتبع لغة الواجهة تلقائياً لأنها
+/// بترجع نص عربي أو إنجليزي حسب اللغة المختارة.
+final RegExp _arabicCharsRegex = RegExp(r'[\u0600-\u06FF]');
+/// ✅ ينظّف النص من رموز ما يدعمها خط PDF (متل السهم →) قبل الطباعة، حتى ما تطلع
+/// مربعات فارغة (tofu) بدل الرمز. يستبدلها برمز بديل مدعوم بكل الخطوط.
+String pdfSafe(String? text) {
+  if (text == null) return '';
+  return text.replaceAll('→', '-').replaceAll('←', '-');
+}
+
+pw.TextDirection pdfDir(String? text) =>
+    (text != null && _arabicCharsRegex.hasMatch(text)) ? pw.TextDirection.rtl : pw.TextDirection.ltr;
+pw.TextAlign pdfAlign(String? text) =>
+    (text != null && _arabicCharsRegex.hasMatch(text)) ? pw.TextAlign.right : pw.TextAlign.left;
 
 Widget expiryBadge(String label, String dateStr, {bool compact = false}) {
   final status = expiryStatus(dateStr);
