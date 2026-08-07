@@ -33,6 +33,8 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
 
   String? _selectedDriver;
   String? _selectedLine;
+  String? _selectedMainStation;
+  String? _selectedSubStation;
 
   List<UserModel> get _drivers => globalUsers.where((u) => u.role == 'سائق').toList();
 
@@ -368,6 +370,28 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                 ),
                 const SizedBox(height: 12),
 
+                // ── محطتا المركبة ────────────────────
+                _fieldLabel('${L.get('main_station')} *'),
+                _SearchableDropdown(
+                  hint: L.get('choose_main_station'),
+                  items: stationsList,
+                  selected: _selectedMainStation,
+                  onSelected: (v) => setState(() => _selectedMainStation = v),
+                  validator: (v) => (v == null || v.isEmpty)
+                      ? L.get('val_main_station_required')
+                      : null,
+                ),
+                const SizedBox(height: 12),
+
+                _fieldLabel(L.get('sub_station')),
+                _SearchableDropdown(
+                  hint: L.get('choose_sub_station'),
+                  items: stationsList,
+                  selected: _selectedSubStation,
+                  onSelected: (v) => setState(() => _selectedSubStation = v),
+                ),
+                const SizedBox(height: 12),
+
                 _fieldLabel(L.get('line')),
                 globalLines.isEmpty
                   ? Container(
@@ -472,6 +496,10 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                       return;
                     }
 
+                    // ✅ نجيب هوية السائق (Driver_id) من قائمة السائقين حسب الاسم المختار
+                    final matchedDriver = _drivers.where((d) => d.name == _selectedDriver);
+                    final driverId = matchedDriver.isNotEmpty ? matchedDriver.first.id : '';
+
                     final newVehicle = LineVehicle(
                       number:           1,
                       vehicleId:        _plateCtrl.text.trim(),
@@ -490,6 +518,9 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                       ownerPhone:       _ownerPhoneCtrl.text.trim(),
                       ownerId:          _ownerIdCtrl.text.trim(),
                       driverName:       _selectedDriver ?? '',
+                      driverId:         driverId,
+                      mainStation:      _selectedMainStation ?? '',
+                      subStation:       _selectedSubStation ?? '',
                     );
 
                     final lineIndex = _selectedLine != null
@@ -515,6 +546,9 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                         ownerPhone:       newVehicle.ownerPhone,
                         ownerId:          newVehicle.ownerId,
                         driverName:       newVehicle.driverName,
+                        driverId:         newVehicle.driverId,
+                        mainStation:      newVehicle.mainStation,
+                        subStation:       newVehicle.subStation,
                       );
                       globalVehicles[lineIndex].add(updated);
                     } else {
@@ -541,6 +575,9 @@ class _AddVehiclePageState extends State<_AddVehiclePage> with DarkModeRebuild<_
                           ownerPhone:       newVehicle.ownerPhone,
                           ownerId:          newVehicle.ownerId,
                           driverName:       newVehicle.driverName,
+                          driverId:         newVehicle.driverId,
+                          mainStation:      newVehicle.mainStation,
+                          subStation:       newVehicle.subStation,
                         ));
                       }
                     }

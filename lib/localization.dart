@@ -113,6 +113,9 @@ class L {
     'security':         'موظف أمن',
     'supervisor':       'مشرف خط',
     'license_data':     'بيانات الرخصة والفحص الطبي',
+    'station':          'المحطة',
+    'choose_station':   'اختر المحطة',
+    'val_station_required': 'المحطة مطلوبة',
     'user_saved':       'تم حفظ المستخدم بنجاح ✓',
     'enter_name':       'ادخل الاسم كاملاً',
     'enter_username':   'أدخل اسم المستخدم',
@@ -141,6 +144,11 @@ class L {
     'owner_name':       'اسم المالك',
     'owner_phone':      'هاتف المالك',
     'owner_id':         'هوية المالك',
+    'main_station':          'المحطة الرئيسية',
+    'sub_station':           'المحطة الفرعية',
+    'choose_main_station':   'اختر المحطة الرئيسية',
+    'choose_sub_station':    'اختر المحطة الفرعية (اختياري)',
+    'val_main_station_required': 'المحطة الرئيسية مطلوبة',
     'status_banned':    'محظورة',
     'status_waiting':   'في الانتظار',
     'status_ready':     'جاهزة',
@@ -579,6 +587,9 @@ class L {
     'security':         'Security Officer',
     'supervisor':       'Line Supervisor',
     'license_data':     'License & Medical Data',
+    'station':          'Station',
+    'choose_station':   'Choose station',
+    'val_station_required': 'Station is required',
     'user_saved':       'User saved successfully ✓',
     'enter_name':       'Enter full name',
     'enter_username':   'Enter username',
@@ -607,6 +618,11 @@ class L {
     'owner_name':       'Owner Name',
     'owner_phone':      'Owner Phone',
     'owner_id':         'Owner ID',
+    'main_station':          'Main Station',
+    'sub_station':           'Sub Station',
+    'choose_main_station':   'Choose main station',
+    'choose_sub_station':    'Choose sub station (optional)',
+    'val_main_station_required': 'Main station is required',
     'status_banned':    'Banned',
     'status_waiting':   'Waiting',
     'status_ready':     'Ready',
@@ -946,6 +962,3 @@ class L {
   static bool get isArabic => langNotifier.value == 'ar';
   static bool get isEnglish => langNotifier.value == 'en';
 }
-
-
-

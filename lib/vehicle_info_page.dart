@@ -299,7 +299,9 @@ class _VehicleInfoPageState extends State<_VehicleInfoPage> with DarkModeRebuild
                     _Row(L.get('model'),         lv.model.isNotEmpty ? lv.model : '—'),
                     _Row(L.get('year'),          lv.year.isNotEmpty ? lv.year : '—'),
                     _Row(L.get('chassis'),       lv.chassis.isNotEmpty ? lv.chassis : '—'),
-                    _Row(L.get('station_name'),  L.get('station_name')),
+                    _Row(L.get('main_station'),  lv.mainStation.isNotEmpty ? lv.mainStation : '—'),
+                    if (lv.subStation.isNotEmpty)
+                      _Row(L.get('sub_station'), lv.subStation),
                   ],
                 ),
                 const SizedBox(height: 12),

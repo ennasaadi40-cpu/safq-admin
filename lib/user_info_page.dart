@@ -173,6 +173,7 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
               tRow(L.get('id_number'),  u.idNumber.isEmpty ? '—' : u.idNumber),
               tRow(L.get('phone'),      u.phone.isEmpty    ? '—' : u.phone),
               if (u.phone2.isNotEmpty) tRow(L.get('phone_optional'), u.phone2),
+              if (u.station.isNotEmpty) tRow(L.get('station'), u.station),
               tRow(L.get('status'),     u.isActive ? L.get('active') : L.get('suspended')),
               if (u.macAddress.isNotEmpty) tRow(L.get('mac_address'), u.macAddress),
             ],
@@ -490,6 +491,8 @@ class _UserInfoPageState extends State<_UserInfoPage> with DarkModeRebuild<_User
                   _URow(L.get('role'),       _roleLabel(u.role)),
                   _URow(L.get('phone'),      u.phone.isEmpty    ? notRegistered : u.phone),
                   _URow(L.get('id_number'),  u.idNumber.isEmpty ? notRegistered : u.idNumber),
+                  if (u.role != 'سائق')
+                    _URow(L.get('station'), u.station.isEmpty ? notRegistered : u.station),
                   _URow(L.get('status'),     _statusLabel(u.status.isEmpty ? (u.isActive ? 'نشط' : 'معلق') : u.status)),
                   if ((u.role == 'سائق' || u.role == 'موظف أمن') && u.macAddress.isNotEmpty)
                     _URow(L.get('mac_address'), u.macAddress),

@@ -30,6 +30,7 @@ class _AddUserPageState extends State<AddUserPage> with DarkModeRebuild<AddUserP
   final _fLicGrade = FocusNode();
 
   String? _selectedRole;
+  String? _selectedStation;
   bool _passwordVisible = false;
   bool _isActive        = true;
 
@@ -67,6 +68,9 @@ class _AddUserPageState extends State<AddUserPage> with DarkModeRebuild<AddUserP
       if (_selectedRole == L.get('security'))   roleStorage = 'موظف أمن';
       if (_selectedRole == L.get('supervisor')) roleStorage = 'مشرف خط';
 
+      // ✅ المحطة إلزامية لكل الأدوار ما عدا السائق
+      final bool needsStation = roleStorage != 'سائق';
+
       final newUser = UserModel(
         name:          _nameCtrl.text.trim(),
         username:      _usernameCtrl.text.trim(),
@@ -81,6 +85,7 @@ class _AddUserPageState extends State<AddUserPage> with DarkModeRebuild<AddUserP
         medicalExpiry: _medicalExpiryCtrl.text.trim(),
         isActive:      _isActive,
         password:      _passwordCtrl.text.trim(),
+        station:       needsStation ? (_selectedStation ?? '') : '',
       );
       logEvent(EventItem(
         vehicleId: '${L.get('user')}: ${newUser.name}',
@@ -219,12 +224,31 @@ class _AddUserPageState extends State<AddUserPage> with DarkModeRebuild<AddUserP
                         hint: L.get('choose_role'),
                         items: _roles,
                         selected: _selectedRole,
-                        onSelected: (v) => setState(() => _selectedRole = v),
+                        onSelected: (v) => setState(() {
+                          _selectedRole = v;
+                          // السائق ما إله محطة ثابتة — نفضّي الاختيار لو تغيّر الدور
+                          if (v == L.get('driver')) _selectedStation = null;
+                        }),
                         validator: (v) => (v == null || v.isEmpty)
                             ? L.get('val_role_required')
                             : null,
                       ),
                       const SizedBox(height: 14),
+
+                      // ── Station (كل الأدوار ما عدا السائق) ──
+                      if (_selectedRole != null && _selectedRole != L.get('driver')) ...[
+                        _FieldLabel(text: L.get('station')),
+                        _SearchableDropdown(
+                          hint: L.get('choose_station'),
+                          items: stationsList,
+                          selected: _selectedStation,
+                          onSelected: (v) => setState(() => _selectedStation = v),
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? L.get('val_station_required')
+                              : null,
+                        ),
+                        const SizedBox(height: 14),
+                      ],
 
                       // ── رقم الهوية ──────────────────────
                       _FieldLabel(text: L.get('id_number')),

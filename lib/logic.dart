@@ -16,6 +16,16 @@ String     profileEmail       = 'admin@station.ps';
 String     profilePhone       = '';
 List<int>? profileImageBytes;
 
+// ✅ قائمة المحطات المعتمدة في النظام
+const List<String> stationsList = [
+  'الخليل',
+  'بيت لحم',
+  'القدس',
+  'رام الله',
+  'نابلس',
+  'دورا',
+];
+
 List<EventItem>          globalEvents          = [];
 List<UserModel>          globalUsers           = [];
 List<LineModel>          globalLines           = [];
@@ -143,6 +153,9 @@ class UserModel extends BaseModel {
   final String macAddress;
   final bool   isActive;
   final String licenseIssueDate;
+  // ✅ محطة المستخدم — إلزامية لكل الأدوار ما عدا السائق
+  // (السائق ممكن يشتغل في أكثر من محطة، فما إلها محطة ثابتة)
+  final String station;
   String password;
 
   UserModel({
@@ -160,8 +173,11 @@ class UserModel extends BaseModel {
     this.macAddress       = '',
     this.isActive         = true,
     this.licenseIssueDate = '',
+    this.station           = '',
     this.password         = '',
   }) : super(id: idNumber.isNotEmpty ? idNumber : name, status: status);
+
+  bool get requiresStation => role != 'سائق';
 
   @override
   String get summary => '$name ($role)';
@@ -211,6 +227,11 @@ class LineVehicle extends BaseModel {
   final String  ownerPhone;      // هاتف المالك
   final String  ownerId;         // هوية المالك
   final String  driverName;      // اسم السائق
+  final String  driverId;        // ✅ هوية/رقم السائق (Driver_id) — يربط بـ UserModel.id
+
+  // ✅ محطتا المركبة: المحطة الرئيسية (إلزامية) والمحطة الفرعية (اختيارية)
+  final String  mainStation;     // Main_station
+  final String  subStation;      // Sub_station
 
   LineVehicle({
     required this.number,
@@ -231,6 +252,9 @@ class LineVehicle extends BaseModel {
     this.ownerPhone       = '',
     this.ownerId          = '',
     this.driverName       = '',
+    this.driverId         = '',
+    this.mainStation      = '',
+    this.subStation       = '',
   }) : super(id: vehicleId, status: status);
 
   @override
@@ -318,6 +342,7 @@ class UserStorage extends BaseStorage<UserModel> {
       licenseGrade:     p.length > 10 ? p[10] : '',
       username:         p.length > 11 ? p[11] : '',
       macAddress:       p.length > 12 ? p[12] : '',
+      station:          p.length > 13 ? p[13] : '',
     );
   }
 
@@ -325,7 +350,7 @@ class UserStorage extends BaseStorage<UserModel> {
   String encode(UserModel u) =>
       '${u.name}|${u.role}|${u.status}|${u.phone}|${u.idNumber}|${u.licenseNum}|'
       '${u.licenseExpiry}|${u.isActive ? "1" : "0"}|${u.password}|'
-      '${u.licenseIssueDate}|${u.licenseGrade}|${u.username}|${u.macAddress}';
+      '${u.licenseIssueDate}|${u.licenseGrade}|${u.username}|${u.macAddress}|${u.station}';
 
   @override
   List<UserModel> loadDefaults() => _defaultUsers
@@ -602,15 +627,15 @@ void loadDummyData() {
 
   // ── المستخدمون ───────────────────────────
   globalUsers = [
-    UserModel(name: 'خالد كرم طرشان',   role: 'مشرف خط',  status: 'نشط', phone: '0592111001', idNumber: '123456789', isActive: true,  password: '1234'),
+    UserModel(name: 'خالد كرم طرشان',   role: 'مشرف خط',  status: 'نشط', phone: '0592111001', idNumber: '123456789', isActive: true,  password: '1234', station: 'الخليل'),
     UserModel(name: 'محمد أحمد العمر',   role: 'سائق',      status: 'نشط', phone: '0592111002', idNumber: '987654321', isActive: true,  password: '1234',
       licenseNum: 'DL-2021-001', licenseExpiry: '2026-08-15', licenseIssueDate: '2021-08-15', licenseGrade: 'D'),
     UserModel(name: 'أحمد إسماعيل الحج', role: 'سائق',      status: 'نشط', phone: '0592111003', idNumber: '112233445', isActive: true,  password: '1234',
       licenseNum: 'DL-2020-045', licenseExpiry: '2025-12-01', licenseIssueDate: '2020-12-01', licenseGrade: 'D'),
     UserModel(name: 'سامر يوسف ناصر',   role: 'سائق',      status: 'نشط', phone: '0592111004', idNumber: '556677889', isActive: true,  password: '1234',
       licenseNum: 'DL-2019-078', licenseExpiry: '2026-03-20', licenseIssueDate: '2019-03-20', licenseGrade: 'D'),
-    UserModel(name: 'عمر فارس حلوم',    role: 'موظف أمن',  status: 'نشط', phone: '0592111005', idNumber: '334455667', isActive: true,  password: '1234'),
-    UserModel(name: 'يوسف نادر سلامة',  role: 'مشرف خط',  status: 'نشط', phone: '0592111006', idNumber: '778899001', isActive: true,  password: '1234'),
+    UserModel(name: 'عمر فارس حلوم',    role: 'موظف أمن',  status: 'نشط', phone: '0592111005', idNumber: '334455667', isActive: true,  password: '1234', station: 'الخليل'),
+    UserModel(name: 'يوسف نادر سلامة',  role: 'مشرف خط',  status: 'نشط', phone: '0592111006', idNumber: '778899001', isActive: true,  password: '1234', station: 'رام الله'),
   ];
 
   // ── الخطوط والمركبات ─────────────────────

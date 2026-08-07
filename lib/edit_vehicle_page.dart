@@ -37,6 +37,10 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
   final _ownerIdCtrl         = TextEditingController();
   String? _selectedDriver;
   late String? _selectedLine = widget.lineName.isNotEmpty ? widget.lineName : null;
+  late String? _selectedMainStation =
+      widget.vehicle.mainStation.isNotEmpty ? widget.vehicle.mainStation : null;
+  late String? _selectedSubStation =
+      widget.vehicle.subStation.isNotEmpty ? widget.vehicle.subStation : null;
 
   List<UserModel> get _drivers => globalUsers.where((u) => u.role == 'سائق').toList();
   List<String>    get _lineNames => globalLines.map((l) => l.name).toList();
@@ -320,6 +324,28 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                   onSelected: (v) => setState(() => _selectedLine = v),
                   validator: (v) => (v == null || v.isEmpty) ? L.get('val_line_required') : null,
                 ),
+                const SizedBox(height: 12),
+
+                // ── محطتا المركبة ────────────────────
+                _fieldLabel('${L.get('main_station')} *'),
+                _SearchableDropdown(
+                  hint: L.get('choose_main_station'),
+                  items: stationsList,
+                  selected: _selectedMainStation,
+                  onSelected: (v) => setState(() => _selectedMainStation = v),
+                  validator: (v) => (v == null || v.isEmpty)
+                      ? L.get('val_main_station_required')
+                      : null,
+                ),
+                const SizedBox(height: 12),
+
+                _fieldLabel(L.get('sub_station')),
+                _SearchableDropdown(
+                  hint: L.get('choose_sub_station'),
+                  items: stationsList,
+                  selected: _selectedSubStation,
+                  onSelected: (v) => setState(() => _selectedSubStation = v),
+                ),
               ])),
 
               const SizedBox(height: 24),
@@ -343,6 +369,11 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                       for (int j = 0; j < globalVehicles[i].length; j++) {
                         if (globalVehicles[i][j].vehicleId == vid) {
                           final old = globalVehicles[i][j];
+                          // ✅ نجيب هوية السائق (Driver_id) من قائمة السائقين حسب الاسم المختار
+                          final matchedDriver = _drivers.where((d) => d.name == _selectedDriver);
+                          final driverId = matchedDriver.isNotEmpty
+                              ? matchedDriver.first.id
+                              : old.driverId;
                           globalVehicles[i][j] = LineVehicle(
                             number:           old.number,
                             vehicleId:        _plateCtrl.text.trim(),
@@ -355,6 +386,10 @@ class _EditVehiclePageState extends State<_EditVehiclePage> with DarkModeRebuild
                             operatingLicDate: _opLicExpCtrl.text.trim(),
                             rfidTag:          _rfidCtrl.text.trim(),
                             loadingExpiry:    _loadingExpiryCtrl.text.trim(),
+                            driverName:       _selectedDriver ?? old.driverName,
+                            driverId:         driverId,
+                            mainStation:      _selectedMainStation ?? '',
+                            subStation:       _selectedSubStation ?? '',
                           );
                         }
                       }

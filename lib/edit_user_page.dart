@@ -16,6 +16,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
   late final _licenseNumCtrl   = TextEditingController(text: widget.user.licenseNum);
   late final _licenseExpiryCtrl = TextEditingController(text: widget.user.licenseExpiry);
   late String? _selectedRole   = widget.user.role;
+  late String? _selectedStation = widget.user.station.isNotEmpty ? widget.user.station : null;
   late String _currentPassword  = widget.user.password;
   late String? _selectedStatus = widget.user.status;
   late bool _isActive          = widget.user.isActive;
@@ -71,6 +72,9 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
       if (_selectedRole == L.get('security'))   roleStorage = 'موظف أمن';
       if (_selectedRole == L.get('supervisor')) roleStorage = 'مشرف خط';
 
+      // ✅ المحطة إلزامية لكل الأدوار ما عدا السائق
+      final bool needsStation = roleStorage != 'سائق';
+
       final updated = UserModel(
         name:          _nameCtrl.text.trim(),
         username:      _usernameCtrl.text.trim().isNotEmpty
@@ -84,6 +88,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
         licenseExpiry: _licenseExpiryCtrl.text.trim(),
         isActive:      _isActive,
         password:      _currentPassword,
+        station:       needsStation ? (_selectedStation ?? '') : '',
       );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Row(children: [
@@ -171,6 +176,7 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                   licenseIssueDate: globalUsers[idx].licenseIssueDate,
                   licenseGrade: globalUsers[idx].licenseGrade,
                   username: globalUsers[idx].username, macAddress: globalUsers[idx].macAddress,
+                  station: globalUsers[idx].station,
                   password: newPassCtrl.text,
                 );
                 autoSave();
@@ -253,10 +259,28 @@ class _EditUserPageState extends State<EditUserPage> with DarkModeRebuild<EditUs
                   hint: L.get('choose_role'),
                   items: _roles,
                   selected: _selectedRole,
-                  onSelected: (v) => setState(() => _selectedRole = v),
+                  onSelected: (v) => setState(() {
+                    _selectedRole = v;
+                    if (v == L.get('driver')) _selectedStation = null;
+                  }),
                   validator: (v) => v == null ? L.get('val_role_required') : null,
                 ),
                 const SizedBox(height: 16),
+
+                // Station (كل الأدوار ما عدا السائق)
+                if (_selectedRole != null && _selectedRole != L.get('driver')) ...[
+                  _label(L.get('station')),
+                  _SearchableDropdown(
+                    hint: L.get('choose_station'),
+                    items: stationsList,
+                    selected: _selectedStation,
+                    onSelected: (v) => setState(() => _selectedStation = v),
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? L.get('val_station_required')
+                        : null,
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // رقم الهاتف
                 _label(L.get('phone')),
