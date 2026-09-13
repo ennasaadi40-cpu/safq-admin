@@ -183,33 +183,6 @@ Future<void> loadOrders() async {
       globalOrders = list.map((e) => ExternalRequest.fromJson(e)).toList();
     } catch (_) {}
   }
-  if (globalOrders.isEmpty) {
-    globalOrders = [
-      ExternalRequest(
-        id: 'OR-001', type: RequestType.parcel, status: RequestStatus.pending,
-        location: 'الخليل — باب الزاوية', destination: 'رام الله — البيرة',
-        contactPhone: '0598765432', createdAt: '2025-05-19T09:30:00',
-        senderName: 'منى الجعبري', lineName: 'الخليل / رام الله',
-        parcelName: 'مستندات رسمية', parcelDetails: 'مظروف مختوم — عاجل',
-      ),
-      ExternalRequest(
-        id: 'OR-002', type: RequestType.parcel, status: RequestStatus.cancelled,
-        location: 'الخليل — صحراء', destination: 'نابلس — المركز',
-        contactPhone: '0592111222', createdAt: '2025-05-17T11:15:00',
-        senderName: 'ريم حسن', lineName: 'الخليل / نابلس',
-        parcelName: 'بضاعة تجارية', parcelDetails: 'صندوق متوسط الحجم',
-      ),
-      ExternalRequest(
-        id: 'OR-003', type: RequestType.parcel, status: RequestStatus.accepted,
-        location: 'الخليل — عين سارة', destination: 'دورا — المركز',
-        contactPhone: '0591998877', createdAt: '2025-05-19T07:00:00',
-        senderName: 'وليد أبو شريخ', lineName: 'الخليل / دورا',
-        parcelName: 'قطع غيار', parcelDetails: 'كرتونة صغيرة',
-        delivered: true,
-      ),
-    ];
-    await saveOrders();
-  }
 }
 
 Future<void> loadDeliveryRequests() async {
@@ -220,34 +193,6 @@ Future<void> loadDeliveryRequests() async {
       final list = jsonDecode(raw) as List;
       globalDeliveryRequests = list.map((e) => ExternalRequest.fromJson(e)).toList();
     } catch (_) {}
-  }
-  if (globalDeliveryRequests.isEmpty) {
-    globalDeliveryRequests = [
-      ExternalRequest(
-        id: 'DL-001', type: RequestType.passengers, status: RequestStatus.pending,
-        location: 'الخليل — حي الشيخ', destination: 'بيت لحم — المركز',
-        contactPhone: '0599123456', createdAt: '2025-05-19T08:00:00',
-        senderName: 'سامر أبو عيشة', lineName: 'الخليل / بيت لحم',
-        passengersCount: 3,
-      ),
-      ExternalRequest(
-        id: 'DL-002', type: RequestType.passengers, status: RequestStatus.accepted,
-        location: 'الخليل — الحرس', destination: 'القدس — باب العمود',
-        contactPhone: '0597654321', createdAt: '2025-05-18T14:00:00',
-        senderName: 'خالد العمر', lineName: 'الخليل / القدس',
-        passengersCount: 2,
-        assignedVehicleId: '12-234-12', assignedDriver: 'أحمد إسماعيل الحج',
-        assignedLine: '[101] الخليل - بيت لحم',
-      ),
-      ExternalRequest(
-        id: 'DL-003', type: RequestType.passengers, status: RequestStatus.pending,
-        location: 'الخليل — عين سارة', destination: 'دورا — المركز',
-        contactPhone: '0591999888', createdAt: '2025-05-19T10:45:00',
-        senderName: 'عمر الشريف', lineName: 'الخليل / دورا',
-        passengersCount: 1,
-      ),
-    ];
-    await saveDeliveryRequests();
   }
 }
 

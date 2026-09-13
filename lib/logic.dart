@@ -595,12 +595,7 @@ class GateModel {
   );
 }
 
-List<GateModel> globalGates = [
-  GateModel(id: 'g1', floor: '1', type: 'مدخل',  number: '1'),
-  GateModel(id: 'g2', floor: '1', type: 'مخرج',  number: '1'),
-  GateModel(id: 'g3', floor: '2', type: 'مدخل',  number: '1'),
-  GateModel(id: 'g4', floor: '2', type: 'مخرج',  number: '1'),
-];
+List<GateModel> globalGates = [];
 
 /// ✅ يحدد اتجاه النص تلقائياً حسب محتواه الفعلي (عربي أو غيره) — يُستخدم بتقارير الـ PDF
 /// حتى تضل البيانات القادمة من قاعدة البيانات (أسماء عربية مثلاً) RTL دايماً بغض النظر عن
@@ -646,175 +641,12 @@ Widget expiryBadge(String label, String dateStr, {bool compact = false}) {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  Dummy Data — بيانات وهمية للعرض
+//  Dummy Data — تم تفريغها بالكامل، البرنامج يبدأ بدون أي بيانات وهمية
 // ════════════════════════════════════════════════════════════════
 void loadDummyData() {
-  // ── البوابات ─────────────────────────────
-  globalGates = [
-    GateModel(id: 'g1', floor: '1', type: 'مدخل', number: '1'),
-    GateModel(id: 'g2', floor: '1', type: 'مخرج', number: '1'),
-    GateModel(id: 'g3', floor: '2', type: 'مدخل', number: '2'),
-    GateModel(id: 'g4', floor: '2', type: 'مخرج', number: '2'),
-  ];
-
-  // ── المستخدمون ───────────────────────────
-  globalUsers = [
-    UserModel(name: 'خالد كرم طرشان',   role: 'مشرف خط',  status: 'نشط', phone: '0592111001', idNumber: '123456789', isActive: true,  password: '1234', station: 'الخليل'),
-    UserModel(name: 'محمد أحمد العمر',   role: 'سائق',      status: 'نشط', phone: '0592111002', idNumber: '987654321', isActive: true,  password: '1234',
-      licenseNum: 'DL-2021-001', licenseExpiry: '2026-08-15', licenseIssueDate: '2021-08-15', licenseGrade: 'D'),
-    UserModel(name: 'أحمد إسماعيل الحج', role: 'سائق',      status: 'نشط', phone: '0592111003', idNumber: '112233445', isActive: true,  password: '1234',
-      licenseNum: 'DL-2020-045', licenseExpiry: '2025-12-01', licenseIssueDate: '2020-12-01', licenseGrade: 'D'),
-    UserModel(name: 'سامر يوسف ناصر',   role: 'سائق',      status: 'نشط', phone: '0592111004', idNumber: '556677889', isActive: true,  password: '1234',
-      licenseNum: 'DL-2019-078', licenseExpiry: '2026-03-20', licenseIssueDate: '2019-03-20', licenseGrade: 'D'),
-    UserModel(name: 'عمر فارس حلوم',    role: 'موظف أمن',  status: 'نشط', phone: '0592111005', idNumber: '334455667', isActive: true,  password: '1234', station: 'الخليل'),
-    UserModel(name: 'يوسف نادر سلامة',  role: 'مشرف خط',  status: 'نشط', phone: '0592111006', idNumber: '778899001', isActive: true,  password: '1234', station: 'رام الله'),
-  ];
-
-  // ── الخطوط والمركبات ─────────────────────
-  globalLines = [
-    LineModel(name: '[101] الخليل → بيت لحم', subtitle: '3 في الانتظار', supervisor: 'خالد كرم طرشان',
-      gateId: '101', entryGateId: 'g1', exitGateId: 'g2', fare: '8', loadingSlots: 5),
-    LineModel(name: '[102] الخليل → القدس',   subtitle: '2 في الانتظار', supervisor: 'يوسف نادر سلامة',
-      gateId: '102', entryGateId: 'g3', exitGateId: 'g4', fare: '15', loadingSlots: 4),
-    LineModel(name: '[103] الخليل → رام الله', subtitle: '1 في الانتظار', supervisor: 'خالد كرم طرشان',
-      gateId: '103', entryGateId: 'g1', exitGateId: 'g2', fare: '12', loadingSlots: 3),
-  ];
-
-  globalVehicles = [
-    // خط 101
-    [
-      LineVehicle(
-        number: 1, 
-        vehicleId: '12-234-12', 
-        status: 'في الخط',
-        ownerName: 'محمود خليل أبو صالح',
-        carLicExpiry: '2026-06-01', 
-        insuranceExpiry: '2026-05-15', 
-        loadingExpiry: '2025-08-01',
-        operatingLicNum: 'OP-2023-1001',
-        operatingLicDate: '2023-01-15',
-        rfidTag: 'RFID-101-AAA',
-        maker: 'Toyota',
-        model: 'Hiace',
-        year: '2018',
-        chassis: 'JTD1234567890',
-        ownerPhone: '0598765001',
-        ownerId: '900111222',
-        driverName: 'أحمد إسماعيل الحج',
-      ),
-      LineVehicle(
-        number: 2, 
-        vehicleId: '34-567-89', 
-        status: 'في الانتظار', 
-        ownerName: 'عمر فيصل الطويل',   
-        carLicExpiry: '2025-11-20', 
-        insuranceExpiry: '2025-10-10', 
-        loadingExpiry: '2025-07-15',
-        operatingLicNum: 'OP-2022-2045',
-        operatingLicDate: '2022-05-20',
-        rfidTag: 'RFID-101-BBB',
-        maker: 'Mercedes',
-        model: 'Sprinter',
-        year: '2020',
-        chassis: 'WDB9066091234567',
-        ownerPhone: '0599876002',
-        ownerId: '900222333',
-        driverName: 'محمد أحمد العمر',
-      ),
-      LineVehicle(
-        number: 3, 
-        vehicleId: '56-789-01', 
-        status: 'مخالفة',      
-        ownerName: 'ياسر محمود الدبس',   
-        carLicExpiry: '2026-02-28', 
-        insuranceExpiry: '2026-01-05', 
-        loadingExpiry: '2025-06-30',
-        operatingLicNum: 'OP-2021-3078',
-        operatingLicDate: '2021-08-10',
-        rfidTag: 'RFID-101-CCC',
-        maker: 'Hyundai',
-        model: 'H350',
-        year: '2019',
-        chassis: 'KMJST35GBKU123456',
-        ownerPhone: '0597654003',
-        ownerId: '900333444',
-        driverName: 'سامر يوسف ناصر',
-      ),
-    ],
-    // خط 102
-    [
-      LineVehicle(
-        number: 1, 
-        vehicleId: '78-901-23', 
-        status: 'في الخط',       
-        ownerName: 'سعيد رامي حسونة',   
-        carLicExpiry: '2026-09-10', 
-        insuranceExpiry: '2026-08-20', 
-        loadingExpiry: '2025-09-01',
-        operatingLicNum: 'OP-2023-4123',
-        operatingLicDate: '2023-03-05',
-        rfidTag: 'RFID-102-AAA',
-        maker: 'Ford',
-        model: 'Transit',
-        year: '2021',
-        chassis: 'WF0VXXTTGVDC12345',
-        ownerPhone: '0596543004',
-        ownerId: '900444555',
-        driverName: 'محمد أحمد العمر',
-      ),
-      LineVehicle(
-        number: 2, 
-        vehicleId: '90-123-45', 
-        status: 'في الانتظار', 
-        ownerName: 'طارق نبيل جرادات', 
-        carLicExpiry: '2025-12-15', 
-        insuranceExpiry: '2025-11-30', 
-        loadingExpiry: '2025-08-20',
-        operatingLicNum: 'OP-2022-5156',
-        operatingLicDate: '2022-07-12',
-        rfidTag: 'RFID-102-BBB',
-        maker: 'Toyota',
-        model: 'Coaster',
-        year: '2017',
-        chassis: 'JTGDE413507654321',
-        ownerPhone: '0595432005',
-        ownerId: '900555666',
-        driverName: 'أحمد إسماعيل الحج',
-      ),
-    ],
-    // خط 103
-    [
-      LineVehicle(
-        number: 1, 
-        vehicleId: '11-222-33', 
-        status: 'جاهزة',       
-        ownerName: 'بلال كمال شاهين',   
-        carLicExpiry: '2026-07-05', 
-        insuranceExpiry: '2026-06-15', 
-        loadingExpiry: '2025-10-01',
-        operatingLicNum: 'OP-2020-6189',
-        operatingLicDate: '2020-11-25',
-        rfidTag: 'RFID-103-AAA',
-        maker: 'Mitsubishi',
-        model: 'Rosa',
-        year: '2016',
-        chassis: 'JL6FE27J9AK098765',
-        ownerPhone: '0594321006',
-        ownerId: '900666777',
-        driverName: 'سامر يوسف ناصر',
-      ),
-    ],
-  ];
-
-  // ── الأحداث ──────────────────────────────
-  globalEvents = [
-    EventItem(vehicleId: '12-234-12', location: '[101] الخليل → بيت لحم', time: '2025-05-19 08:30', type: EventType.entry),
-    EventItem(vehicleId: '34-567-89', location: '[101] الخليل → بيت لحم', time: '2025-05-19 09:15', type: EventType.entry),
-    EventItem(vehicleId: '56-789-01', location: '[101] الخليل → بيت لحم', time: '2025-05-19 10:00', type: EventType.violation, violationNote: 'تجاوز الطابور — 150 ₪'),
-    EventItem(vehicleId: '78-901-23', location: '[102] الخليل → القدس',   time: '2025-05-19 07:45', type: EventType.entry),
-    EventItem(vehicleId: '34-567-89', location: '[101] الخليل → بيت لحم', time: '2025-05-18 16:30', type: EventType.exit),
-    EventItem(vehicleId: '90-123-45', location: '[102] الخليل → القدس',   time: '2025-05-18 14:20', type: EventType.entry),
-    EventItem(vehicleId: '11-222-33', location: '[103] الخليل → رام الله', time: '2025-05-18 11:00', type: EventType.entry),
-    EventItem(vehicleId: '56-789-01', location: '[101] الخليل → بيت لحم', time: '2025-05-17 09:30', type: EventType.violation, violationNote: 'حمولة زائدة — 300 ₪'),
-  ];
+  globalGates    = [];
+  globalUsers    = [];
+  globalLines    = [];
+  globalVehicles = [];
+  globalEvents   = [];
 }
